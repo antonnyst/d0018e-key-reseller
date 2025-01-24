@@ -10,4 +10,6 @@ RUN chmod +x /start.sh
 
 EXPOSE 3306
 
+VOLUME "/var/lib/maria"
+
 CMD ["/start.sh"]
