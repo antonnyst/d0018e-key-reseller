@@ -40,8 +40,11 @@ echo "Starting MariaDB ..."
 #
 # Run MariaDB with exec bash command
 exec mariadbd --user=$USER --datadir=$DIR_DATA --socket=/var/lib/maria/maria.sock &
+
+exec node /web/app.js &
+
 #
 # Wait for MariaDB until stopped by Docker
-wait $!
+wait
 exit 1
 
