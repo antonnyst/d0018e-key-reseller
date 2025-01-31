@@ -29,9 +29,9 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Users ( \
         ID INT NOT NULL AUTO_INCREMENT, \
         Name VARCHAR(50) NOT NULL UNIQUE, \
-        UserType ENUM('user', 'admin') NOT NULL DEFAULT 'user'
+        UserType ENUM('user', 'admin') NOT NULL DEFAULT 'user', \
         PasswordHash VARCHAR(255) NOT NULL, \
-        PassworkSalt VARBINARY(32) NOT NULL, \
+        PasswordSalt VARBINARY(32) NOT NULL, \
         SignupTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
         active BOOLEAN NOT NULL DEFAULT TRUE,\
         PRIMARY KEY (ID) \
@@ -65,7 +65,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         Price VARCHAR(50) NOT NULL, \
         GameID INT NOT NULL, \
         active BOOLEAN NOT NULL DEFAULT TRUE, \
-        PRIMARY KEY (ID, GameID), \
+        PRIMARY KEY (ID), \
         FOREIGN KEY (GameID) REFERENCES g3a.Games(ID) ON DELETE CASCADE \
     );\
 "
@@ -76,7 +76,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         ID INT NOT NULL AUTO_INCREMENT, \
         KeyString VARCHAR(50) NOT NULL UNIQUE, \
         GameID INT NOT NULL, \
-        PRIMARY KEY (ID, GameID), \
+        PRIMARY KEY (ID), \
         FOREIGN KEY (GameID) REFERENCES g3a.Games(ID) ON DELETE CASCADE \
     );\
 "
