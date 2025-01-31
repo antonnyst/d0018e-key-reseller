@@ -1,5 +1,7 @@
 import React from "react";
-import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView } from "react-native";
+import { useState } from "react";
+
+import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView, ScrollViewProps } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -42,69 +44,63 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
 });
+function gameCard(name: string, description: string, image_url: string) {
+  return <View style={styles.gameListElement}>
+          <Image
+            source={require('../assets/images/icon.png')}
+            style={styles.gameLogo}
+          />
+          <View style={styles.textContainer}>
+            <Text style={styles.gameTitle}>{name}</Text>
+            <Text style={styles.gameDescription}>
+              {description}
+            </Text>
+          </View>
+        </View>;
+} 
+
+interface IProps {
+}
+
+interface Game {
+  Name: string,
+  ID: number,
+  Description: string,
+  active: Boolean
+}
+
+interface IState {
+  games: Game[]
+}
+
+
+class GamesView extends React.Component<IProps, IState> {
+  componentDidMount(): void {
+    fetch("/api/games")
+      .then(response => response.json())
+      .then(json => { this.setState({games: json}) })
+      .catch(err => console.log(err));
+  }
+  render(): React.ReactNode {      
+    if (this.state?.games == null) {
+      return <ScrollView></ScrollView>
+    }
+    let cards: React.JSX.Element[] = []
+
+    this.state.games.forEach(obj => {
+      cards.push(gameCard(obj.Name, obj.Description,""))
+    })
+
+    return <ScrollView>   
+      {cards}
+    </ScrollView>
+  }
+}
 
 export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
-    <ScrollView>
-      <View style={styles.gameListElement}>
-        <Image
-        source={require('../assets/images/icon.png')}
-        style={styles.gameLogo}
-        />
-        <View style={styles.textContainer}>
-          <Text
-          style={styles.gameTitle}
-          >Speltitel</Text>
-          <Text
-          style={styles.gameDescription}
-          >
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
-            nisi ut aliquip ex ea commodo consequat."
-          </Text>
-        </View>
-      </View>
-      <View style={styles.gameListElement}>
-        <Image
-        source={require('../assets/images/icon.png')}
-        style={styles.gameLogo}
-        />
-        <View style={styles.textContainer}>
-          <Text
-          style={styles.gameTitle}
-          >Speltitel</Text>
-          <Text
-          style={styles.gameDescription}
-          >
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
-            nisi ut aliquip ex ea commodo consequat."
-          </Text>
-        </View>
-      </View>
-      <View style={styles.gameListElement}>
-        <Image
-        source={require('../assets/images/icon.png')}
-        style={styles.gameLogo}
-        />
-        <View style={styles.textContainer}>
-          <Text
-          style={styles.gameTitle}
-          >Speltitel</Text>
-          <Text
-          style={styles.gameDescription}
-          >
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
-            sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris 
-            nisi ut aliquip ex ea commodo consequat."
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+    <GamesView></GamesView>
     </SafeAreaView>
   );
 }

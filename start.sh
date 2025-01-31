@@ -43,10 +43,13 @@ exec mariadbd --user=$USER --datadir=$DIR_DATA --socket=/var/lib/maria/maria.soc
 
 exec /db_init.sh &
 
-exec node /api/app.js &
+(cd /api; node /api/app.js) &
 
-exec node /web/app.js &
+(cd /web; node /web/app.js) &
 
+#  
+#  /public/ ****
+#  /web/public/***
 #
 # Wait for processes to stop
 wait
