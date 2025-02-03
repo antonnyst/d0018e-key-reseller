@@ -145,26 +145,27 @@ echo "sessions table created"
 # Lägg in default data
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Games (Name, Description, ImageURL) VALUES \
-    (\"Gruvkraft - Kiruna Edition\", \"A mining simulation game set in Kiruna\", \"https://example.com/image1.jpg\"), \
+    (\"Gruvkraft - Kiruna Edition\", \"A mining simulation game set in Kiruna\", \"GRUVKRAFT.jpg\"), \
+    (\"EEE\", \"Do NOT stack the blocks...\", \"eee.png\") \
 "
 echo "games data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Users (Name, PasswordHash) VALUES \
-    (\"player1\", \"hashed_password_1\"), \
+    (\"player1\", \"hashed_password_1\") \
 "
-echo "users data inserted"
+#echo "users data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Tags (Name) VALUES \
     (\"Action\"), \
-    (\"Online Co-Op\"), \
+    (\"Online Co-Op\") \
 "
 echo "tags data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Keys (KeyString) VALUES \
-    (\"12345YU7b4\"), \
+    (\"12345YU7b4\") \
 "
 echo "key data inserted"
 

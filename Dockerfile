@@ -12,6 +12,8 @@ WORKDIR /g3a
 RUN npm install
 RUN npx expo export --platform web --output-dir /web/public
 
+COPY images /web/public/images
+
 WORKDIR /web
 RUN npm install
 

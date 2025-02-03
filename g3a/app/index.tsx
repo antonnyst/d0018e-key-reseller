@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
 });
 function gameCard(name: string, description: string, image_url: string) {
   return <View style={styles.gameListElement}>
-          <Image
-            source={require('../assets/images/icon.png')}
+          <img
+            src={'/images/'+image_url}
             style={styles.gameLogo}
           />
           <View style={styles.textContainer}>
@@ -66,7 +66,8 @@ interface Game {
   Name: string,
   ID: number,
   Description: string,
-  active: Boolean
+  active: Boolean,
+  ImageURL: string,
 }
 
 interface IState {
@@ -88,7 +89,7 @@ class GamesView extends React.Component<IProps, IState> {
     let cards: React.JSX.Element[] = []
 
     this.state.games.forEach(obj => {
-      cards.push(gameCard(obj.Name, obj.Description,""))
+      cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL))
     })
 
     return <ScrollView>   
