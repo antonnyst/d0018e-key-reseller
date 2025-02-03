@@ -146,7 +146,10 @@ echo "sessions table created"
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Games (Name, Description, ImageURL) VALUES \
     (\"Gruvkraft - Kiruna Edition\", \"A mining simulation game set in Kiruna\", \"GRUVKRAFT.jpg\"), \
-    (\"EEE\", \"Do NOT stack the blocks...\", \"eee.png\") \
+    (\"EEE\", \"Do NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE2\", \"Do NOT NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE3\", \"Do NOT NOT NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE4\", \"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\")  \
 "
 echo "games data inserted"
 

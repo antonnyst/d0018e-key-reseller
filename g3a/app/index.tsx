@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   gameLogo: {
-    width: "33%",
+    aspectRatio: 1 / 1,
     height: "100%",
   },
   textContainer: {
