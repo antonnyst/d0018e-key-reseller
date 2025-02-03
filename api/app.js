@@ -44,6 +44,32 @@ app.get('/games', async (req, res) => {
     res.send(result);
 });
 
+app.get('/game/:id', async (req, res) => {
+    let query;
+    if (req.params.id) {
+        query = `
+            SELECT * FROM g3a.Games 
+            WHERE g3a.Games.ID = '${req.params.id}'
+        `;
+    } else {
+        res.statusCode = 500;
+        res.send("Error");
+        return;
+    }
+
+    let conn;
+    let result;
+    try {
+        conn = await pool.getConnection();
+        result = await conn.query(query);
+    } catch (err) {
+	    throw err;
+    } finally {
+	    if (conn) conn.end();
+    }
+    res.send(result);
+});
+
 app.listen(port, () => {
     console.log(`API listening on ${port}`)
 })
