@@ -14,12 +14,28 @@ const pool = mariadb.createPool({
 
 // GET games 
 // returnar alla games i json
+// search string genom /games?search=text
 app.get('/games', async (req, res) => {
+    let query;
+    if (req.query.search) {
+        // Search with string
+        query = `
+            SELECT * FROM g3a.Games 
+            WHERE 
+                (g3a.Games.Name LIKE '%${req.query.search}%') OR 
+                (g3a.Games.Description LIKE '%${req.query.search}%')
+        `
+    } else {
+        // Get all games
+        query = "SELECT * FROM g3a.Games"
+    }
+
     let conn;
     let result;
     try {
         conn = await pool.getConnection();
-        result = await conn.query("SELECT * FROM g3a.Games");
+        console.log(query)
+        result = await conn.query(query);
     } catch (err) {
 	    throw err;
     } finally {

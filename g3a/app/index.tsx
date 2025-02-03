@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView, ScrollViewProps } from "react-native";
+import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView, ScrollViewProps, TextInput } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -43,6 +43,14 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     marginRight: 12,
   },
+  searchBar: {
+    fontSize: 30,
+    fontWeight: "normal",
+    color: "black",
+    margin: 30,
+    height: 50,
+    borderWidth: 2,
+  }
 });
 function gameCard(name: string, description: string, image_url: string) {
   return <View style={styles.gameListElement}>
@@ -92,7 +100,16 @@ class GamesView extends React.Component<IProps, IState> {
       cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL))
     })
 
-    return <ScrollView>   
+    return <ScrollView>
+      <TextInput
+        style={styles.searchBar}
+        onSubmitEditing={(text) => {
+          fetch("/api/games?search="+text.nativeEvent.text)
+            .then(response => response.json())
+            .then(json => { console.log(json); this.setState({games: json}) })
+            .catch(err => console.log(err));
+        }}
+      />
       {cards}
     </ScrollView>
   }
