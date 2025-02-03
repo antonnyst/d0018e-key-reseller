@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
-
-import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView, ScrollViewProps, TextInput } from "react-native";
+import { useLocalSearchParams, useGlobalSearchParams, Link, router } from 'expo-router';
+import { Text, View, StyleSheet, Image, ScrollView, SafeAreaView, ScrollViewProps, TextInput, Pressable } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -52,18 +52,28 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   }
 });
-function gameCard(name: string, description: string, image_url: string) {
+
+function gameCard(name: string, description: string, image_url: string, id: string) {
   return <View style={styles.gameListElement}>
-          <img
-            src={'/images/'+image_url}
-            style={styles.gameLogo}
-          />
-          <View style={styles.textContainer}>
-            <Text style={styles.gameTitle}>{name}</Text>
-            <Text style={styles.gameDescription}>
-              {description}
-            </Text>
-          </View>
+              <img
+                src={'/images/'+image_url}
+                style={styles.gameLogo}
+              />
+              <View style={styles.textContainer}>
+                <Text style={styles.gameTitle}>{name}</Text>
+                <Text style={styles.gameDescription}>
+                  {description}
+                </Text>
+                <Pressable
+                 onPress={() =>
+                  router.push({
+                    pathname: "/games/[gamesid]",
+                    params: { gamesid: id },
+                  })
+                 }>
+                  <Text>Klicka här för att kolla mer på spelet!</Text>
+                </Pressable>
+              </View>
         </View>;
 } 
 
@@ -72,7 +82,7 @@ interface IProps {
 
 interface Game {
   Name: string,
-  ID: number,
+  ID: string,
   Description: string,
   active: Boolean,
   ImageURL: string,
@@ -97,7 +107,7 @@ class GamesView extends React.Component<IProps, IState> {
     let cards: React.JSX.Element[] = []
 
     this.state.games.forEach(obj => {
-      cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL))
+      cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL, obj.ID))
     })
 
     return <ScrollView>
