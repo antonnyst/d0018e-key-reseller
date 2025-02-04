@@ -103,6 +103,8 @@ class GamesView extends React.Component<IProps, IState> {
     return <ScrollView>
       <TextInput
         style={styles.searchBar}
+        placeholder="Search..."
+        placeholderTextColor="gray"
         onSubmitEditing={(text) => {
           fetch("/api/games?search="+text.nativeEvent.text)
             .then(response => response.json())
