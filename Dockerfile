@@ -5,17 +5,11 @@ RUN apk add --no-cache nodejs npm
 
 RUN adduser admin -D -H
 
-COPY g3a /g3a
-COPY web /web 
+COPY g3a-next /g3a-next
 
-WORKDIR /g3a
+WORKDIR /g3a-next
 RUN npm install
-RUN npx expo export --platform web --output-dir /web/public
-
-COPY images /web/public/images
-
-WORKDIR /web
-RUN npm install
+RUN npm run build
 
 COPY api /api
 WORKDIR /api

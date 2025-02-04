@@ -45,7 +45,7 @@ exec /db_init.sh &
 
 (cd /api; node /api/app.js) &
 
-(cd /web; node /web/app.js) &
+(cd /g3a-next; npm run start) &
 
 #  
 #  /public/ ****
