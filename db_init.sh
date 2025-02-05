@@ -149,7 +149,10 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"EEE\", \"Do NOT stack the blocks...\", \"eee.png\"), \
     (\"EEE2\", \"Do NOT NOT stack the blocks...\", \"eee.png\"), \
     (\"EEE3\", \"Do NOT NOT NOT stack the blocks...\", \"eee.png\"), \
-    (\"EEE4\", \"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\")  \
+    (\"EEE4\", \"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\"),  \
+    (\"EEE5\", \"...stack the blocks...\", \"eee.png\"),  \
+    (\"EEE6\", \"...the blocks...\", \"eee.png\"),  \
+    (\"EEE7\", \"...blocks...\", \"eee.png\")  \
 "
 echo "games data inserted"
 

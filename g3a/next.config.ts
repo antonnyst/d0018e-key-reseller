@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:slug',
-        destination: "http://localhost:3333/:slug",
+        source: '/api/:slug*',
+        destination: "http://localhost:3333/:slug*",
       },
     ]
   },
