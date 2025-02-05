@@ -1,12 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
-import styles from "@/app/styles/app.module.css"
 import React from "react";
 
 
 function gameCard(name: string, description: string, image_url: string, id: string) {
   return (
-    <button className="aspect-[1/1.5] border-2 border-black grid" key={id} onClick={() => {document.location.href="/game/"+id}}>
+    <button className="border-2 border-black grid"  key={id} onClick={() => {document.location.href="/game/"+id}}>
       <img className="aspect-square m-[5%] w-[90%]" src={"/"+image_url} alt={"Logo for " + name}></img>
       <div className="">
         <h1 className="font-bold text-center">{name}</h1>
@@ -57,14 +56,20 @@ class GamesView extends React.Component<IProps, IState> {
       return search;
     }
     const cards: React.JSX.Element[] = []
-
-    this.state.games.forEach(obj => {
-      cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL, obj.ID))
-    })
-
+    
+    if (this.state.games.length == 0) {
+      cards.push((
+        <h1 className="text-2xl text-center font-bold col-span-full">No games found!</h1>
+      )) 
+    } else {
+      this.state.games.forEach(obj => {
+        cards.push(gameCard(obj.Name, obj.Description, obj.ImageURL, obj.ID))
+      })
+    }
+    
     return <div>
       {search}
-      <div className="grid grid-cols-5 gap-4 p-4">
+      <div className="p-4 gap-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6">
         {cards}
       </div>
     </div>
