@@ -14,8 +14,8 @@ const pool = mariadb.createPool({
 
 // GET games 
 // returnar alla games i json
-// search string genom /games?search=text
-app.get('/games', async (req, res) => {
+// search string genom /game?search=text
+app.get('/game', async (req, res) => {
     let query;
     if (req.query.search) {
         // Search with string
@@ -67,7 +67,7 @@ app.get('/game/:id', async (req, res) => {
     } finally {
 	    if (conn) conn.end();
     }
-    res.send(result);
+    res.send(result[0]);
 });
 
 app.listen(port, () => {

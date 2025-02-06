@@ -45,12 +45,8 @@ exec /db_init.sh &
 
 (cd /api; node /api/app.js) &
 
-(cd /web; node /web/app.js) &
+(cd /g3a; npm run start -- -p 80) &
 
-#  
-#  /public/ ****
-#  /web/public/***
-#
 # Wait for processes to stop
 wait
 exit 1
