@@ -26,6 +26,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <header className="bg-gray-800 text-white p-6 flex items-center space-x-4">
+          <img
+          src="/g3a.se.jpg" 
+          alt="Site Logo"
+          className="w-12 h-12 rounded-full"
+          />
+        <h1 className="text-2xl font-bold"> G3A.se </h1>
+      </header>
+      
         {children}
       </body>
     </html>
