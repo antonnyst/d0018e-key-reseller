@@ -39,6 +39,9 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 echo "users table created"
 
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Users AUTO_INCREMENT=1000;"
+echo "auto increment set"
+
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Tags ( \
         ID INT NOT NULL AUTO_INCREMENT, \
