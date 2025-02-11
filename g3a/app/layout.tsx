@@ -39,7 +39,7 @@ export default function RootLayout({
           </div>
 
           <div className="ml-auto flex items-center">
-            <Link href="user" className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 hover:opacity-80 transition-opacity"
+            <Link href="/user" className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600 hover:opacity-80 transition-opacity"
             >
               <span className="sr-only">Open user menu</span>
               <img
