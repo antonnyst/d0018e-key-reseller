@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.21.2",
-    "mariadb": "^3.4.0"
+    "mariadb": "^3.4.0",
+    "uuid": "^11.0.5"
   }
 }

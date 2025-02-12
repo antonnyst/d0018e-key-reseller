@@ -31,7 +31,6 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         Name VARCHAR(50) NOT NULL UNIQUE, \
         UserType ENUM('user', 'admin') NOT NULL DEFAULT 'user', \
         PasswordHash VARCHAR(255) NOT NULL, \
-        PasswordSalt VARBINARY(32) NOT NULL, \
         SignupTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
         active BOOLEAN NOT NULL DEFAULT TRUE,\
         PRIMARY KEY (ID) \
@@ -138,8 +137,8 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         ID INT NOT NULL AUTO_INCREMENT, \
         UserID INT NOT NULL, \
         Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-        SessionCookie VARCHAR(255) NOT NULL, \
-        PRIMARY KEY (ID, UserID), \
+        SessionCookie VARCHAR(255) UNIQUE NOT NULL, \
+        PRIMARY KEY (ID), \
         FOREIGN KEY (UserID) REFERENCES g3a.Users(ID) ON DELETE CASCADE \
     );\
 "

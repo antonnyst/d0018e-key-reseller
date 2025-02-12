@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers' 
-import Link from 'next/link';
 import { LogoutButton } from '../cookies';
+import LoginPage from './login';
 
 export default async function ProfilePage() {
     // Static list of games
@@ -12,15 +12,7 @@ export default async function ProfilePage() {
       'Call of Booty',
     ];
 
-    const unauthorized_page = (
-      <div className="min-h-screen bg-gray-100 py-8">
-        <Link className="text-2xl" href={"/login"}>
-          <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md text-center">
-            <h1>Log in to access your profile!</h1>
-          </div>
-        </Link>
-      </div>
-    );
+    const unauthorized_page = <LoginPage/>
     
     // Cookie logic
     const cookieStore = await cookies();

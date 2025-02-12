@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = 3333
 const bcrypt = require('bcrypt');
-
+const uuid = require('uuid');
 
 const mariadb = require('mariadb');
 
@@ -13,6 +13,8 @@ const pool = mariadb.createPool({
     connectionLimit: 5,
     database: "g3a"
 });
+
+app.use(express.json());
 
 // GET games 
 // returnar alla games i json
@@ -35,13 +37,9 @@ app.get('/game', async (req, res) => {
     let conn;
     let result;
     try {
-        conn = await pool.getConnection();
-        console.log(query)
-        result = await conn.query(query);
+        result = await pool.query(query);
     } catch (err) {
         throw err;
-    } finally {
-        if (conn) conn.end();
     }
     res.send(result);
 });
@@ -72,44 +70,150 @@ app.get('/game/:id', async (req, res) => {
     res.send(result[0]);
 });
 
-app.post('/user', async (req, res) => {
+app.post('/account', async (req, res) => {
     const { name, password } = req.body;
     let query;
 
     // If username is not set
     if (!name) {
+        res.statusCode = 400;
+        res.send("Enter username");
+        return;
+    }
+    
+    query = `
+        SELECT * FROM g3a.Users
+        WHERE g3a.Users.Name = ?
+    `;
+    const result = await pool.query(query, [name]);
+    if (result.length > 0) {
         res.statusCode = 500,
-            res.send("Enter username")
-    }
-    try {
-        query = `
-            SELECT * FROM g3a.Users
-            WHERE g3a.Users.Name = $1
-        `;
-        const result = await pool.query(query, [name]);
-        if (result.rows.length > 0) {
-            res.statusCode = 500,
-                res.send("Username taken")
-        } else {
-            const saltRounds = 10;
-            const salt = bcrypt.genSalt(saltRounds, function(err, salt) {
-                const hashed = bcrypt.hash(password, salt, function(err, hash) {
-                    const insertQuery = `
-                    INSERT INTO g3a.Users (Name, salt, hashed)
-                    VALUES ($1, $2, $3)
-                    RETURNING *
-                `;
-                });
-            });
-        }
+        res.send("Username taken")
+        return;
+    } 
+    const saltRounds = 10;
+    const hash = await bcrypt.hash(password.toString(), saltRounds);
+    const insertQuery = `
+        INSERT INTO g3a.Users (Name, PasswordHash)
+        VALUES (?, ?)
+        RETURNING ID;
+    `;
 
-        const newUser = await pool.query(insertQuery, [name, salt, hashed])
+    // Insert user and get their new UserID
+    const { ID } = (await pool.query(insertQuery, [name, hash]))[0];
 
-    }catch(err){
-        throw(err);
+    // Create session for their ID
+    const session = await createSession(ID)
+
+    if (session == null) {
+        res.code = 500;
+        res.send("Internal Server Error");
+        return;
     }
-    res.send(newUser)
+    
+    res.send(session);
 });
+
+app.post('/login', async (req, res) => {
+    const { name, password } = req.body;
+    console.log(req.body);
+    if (name == undefined || password == undefined) {
+        res.statusCode = 400;
+        res.send("Bad Request");
+        return;
+    }
+
+    // Check that user exists
+    const user = await getUser(name);
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    // Compare password with hash
+    const result = await bcrypt.compare(password, user.PasswordHash);
+
+    if (result === false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    // Create session as they are authenticated
+    const session = await createSession(user.ID);
+
+    res.send(session);    
+});
+
+// Retrieves an user or null if no user is found
+const getUser = async (name) => {
+    const query = `   
+        SELECT * FROM g3a.Users 
+        WHERE g3a.Users.Name = ?
+    `;
+    
+    try {
+        const result = await pool.query(query, [name]);
+        if (result.length > 0) {
+            // There is an user with name
+            return result[0];
+        }
+    } catch (err) {
+        // Ignore errors in the query and just return null user
+    }
+    
+    return null;
+}
+
+// Creates a new session for user with userID
+const createSession = async (userID) => {
+    const query = `
+        INSERT INTO g3a.Sessions (UserID, SessionCookie)
+        VALUES (?, ?);
+    `;
+
+    const session = uuid.v4();
+
+    try {
+        const result = await pool.query(query, [userID, session]);
+        console.log(result);
+        return session;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+    return null;
+}
+
+// Returns UserID from an session if it is actual (not too old)
+const verifySession = async (session) => {
+    const query = `
+        SELECT UserID, Timestamp FROM g3a.Sessions
+        WHERE g3a.Sessions.SessionCookie = ?;
+    `;
+
+    try {
+        const result = await pool.query(query, [session]);
+        if (result.length > 0) {
+            // Found the session!
+            // Check if it is not too old
+            if (checkTimestampValid(timestamp)) {
+                return result[0].UserID
+            }
+        }
+    } catch (err) {
+        // Ignore errors and just return null
+    }
+    return null;
+}
+
+const checkTimestampValid = async (timestamp) => {
+    console.log(timestamp);
+    console.log(timestamp.toString());
+    // TODO compare time!
+    return true;
+}
 
 app.listen(port, () => {
     console.log(`API listening on ${port}`)

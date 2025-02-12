@@ -1,10 +1,26 @@
 "use client"
 import { deleteCookie, setCookie } from 'cookies-next' 
 
-export function login() {
-    // Fake session token until api implemented
-    const sessionToken = "blah!";
+export async function login(formData: FormData) {
+    const name = formData.get("name");
+    const password = formData.get("password");
+    
+    const response = await fetch("/api/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: name, password: password })
+    });
+
+    if (response.ok == false) {
+        return false;
+    }
+
+    const sessionToken = await response.text();
+   
     setCookie("g3a-session", sessionToken);
+    return true;
 }
 
 export function logout() {
