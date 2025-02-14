@@ -44,6 +44,55 @@ app.get('/game', async (req, res) => {
     res.send(result);
 });
 
+app.post("/game", async(req, res)=> {
+    const {gameName, gameDesc, gameImg } = req.body;
+    let query;
+    query = `
+        SELECT * FROM g3a.Users
+        WHERE g3a.Users.Name = ?
+    `;
+
+    {/* Verify user session */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    {/* Get user ID*/}
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+
+    {/* Validate that a user is an admin */}
+    if(user.userType != "admin"){
+        res.statusCode = 401;
+        res.send("Unauthorized")
+        return;
+    }
+
+    {/* An admin needs to atleast enter a gamename */}
+    if (!gameName) {
+        res.statusCode = 400;
+        res.send("The game needs a name");
+        return;
+    }
+
+    const insertQuery = `
+        INSERT INTO g3a.Games (Name, Description, ImageURL)
+        VALUES (?, ?, ?)
+        RETURNING ID;
+    `;
+
+    {/* Insert game and get game Id */}
+    const { ID } = (await pool.query(insertQuery, [gameName,gameDesc,gameImg]))[0];
+    res.send("Game added sucesfully", {ID})
+});
+
 app.get('/game/:id', async (req, res) => {
     let query;
     if (req.params.id) {
@@ -162,7 +211,7 @@ app.put("/account", async(req, res)=>{
         return;
     }
 
-    {/* Get user ID */}
+    {/* Get user ID*/}
     const user = await getUserID(userID)
     if (user == null) {
         res.statusCode = 401;
