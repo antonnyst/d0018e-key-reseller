@@ -2,6 +2,7 @@
 import Form from 'next/form'
 import { login } from '../cookies';
 import React from 'react';
+import Link from 'next/link';
 
 
 export default function LoginPage() {
