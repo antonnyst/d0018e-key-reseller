@@ -9,7 +9,7 @@ export default function SignupPage() {
     async function action(formData: FormData) {
         const result = await register(formData);
         if (result) {
-            document.location.href = "/user";
+            document.location.href = "/signup";
         } else {
             setStatus("Failed to sign up! Please try again.");
         }
