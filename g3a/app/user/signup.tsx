@@ -1,21 +1,20 @@
-"use client"
-import Form from 'next/form'
-import { login } from '../cookies';
+"use client";
+import Form from 'next/form';
+import { register } from '../cookies';
 import React from 'react';
 
-
-export default function LoginPage() {
+export default function SignupPage() {
     const [status, setStatus] = React.useState("");
-    
+
     async function action(formData: FormData) {
-        const result = await login(formData);
+        const result = await register(formData);
         if (result) {
-            document.location.href="/user"
+            document.location.href = "/user";
         } else {
-            setStatus("Incorrect login!");
+            setStatus("Failed to sign up! Please try again.");
         }
     }
-    
+
     return (
         <div className="min-h-screen bg-gray-100 py-8">
             <Form action={action}>
@@ -25,17 +24,14 @@ export default function LoginPage() {
                     </div>
                     <div className="w-full">
                         <h1 className="text-center">Username</h1>
-                        <input name="name" className="border-black border w-full"></input>
+                        <input name="name" className="border-black border w-full" />
                     </div>
                     <div className="w-full">
                         <h1 className="text-center">Password</h1>
-                        <input name="password" type="password" className="border-black border w-full"></input>
+                        <input name="password" type="password" className="border-black border w-full" />
                     </div>
                     <div className="w-full">
-                        <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Log in!</button>
-                    </div>
-                    <div className="w-full">
-                        <Link href="/signup" className="border-black border ml-[25%] mr-[25%] w-[50%]">Don't have an account? Sign up here!</Link>
+                        <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Sign up!</button>
                     </div>
                 </div>
             </Form>
