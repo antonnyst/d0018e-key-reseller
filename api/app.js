@@ -146,6 +146,52 @@ app.post('/login', async (req, res) => {
     res.send(session);    
 });
 
+app.put("/account", async(req, res)=>{
+    const {session, oldPassword, newPassword} = req.body;
+    let query;
+    query = `
+        SELECT * FROM g3a.Users
+        WHERE g3a.Users.ID = ?
+    `;
+    
+    {/* Verify user session */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    {/* Get user ID */}
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+    
+    {/* Force user to enter old password */}
+    const result = await bcrypt.compare(oldPassword, user.PasswordHash);
+
+    if (result === false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    {/* New password */}
+    const saltRounds = 10;
+    const hash = await bcrypt.hash(newPassword.toString(), saltRounds);
+    const updateQuery = `
+        UPDATE g3a.Users (PasswordHash)
+        SET PasswordHash = ?
+        WHERE ID = ?
+    `;
+    {/* Insert new password to database */}
+    (await pool.query(updateQuery, [hash, userID]))[0];
+})
+
+
 // Retrieves an user or null if no user is found
 const getUser = async (name) => {
     const query = `   
@@ -155,6 +201,25 @@ const getUser = async (name) => {
     
     try {
         const result = await pool.query(query, [name]);
+        if (result.length > 0) {
+            // There is an user with name
+            return result[0];
+        }
+    } catch (err) {
+        // Ignore errors in the query and just return null user
+    }
+    
+    return null;
+}
+
+const getUserID = async (userID) => {
+    const query = `   
+        SELECT * FROM g3a.Users 
+        WHERE g3a.Users.ID = ?
+    `;
+    
+    try {
+        const result = await pool.query(query, [userID]);
         if (result.length > 0) {
             // There is an user with name
             return result[0];
