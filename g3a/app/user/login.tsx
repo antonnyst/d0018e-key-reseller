@@ -36,7 +36,7 @@ export default function LoginPage() {
                         <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Log in!</button>
                     </div>
                     <div className="w-full">
-                        <Link href="/signup" className="border-black border ml-[25%] mr-[25%] w-[50%]">Don't have an account? Sign up here!</Link>
+                        <Link href="/signup" className="border-black border ml-[25%] mr-[25%] w-[50%]">Sign up here!</Link>
                     </div>
                 </div>
             </Form>
