@@ -60,7 +60,7 @@ app.post("/game", async(req, res)=> {
         return;
     }
 
-    {/* Get user ID*/}
+    {/* Get user ID */}
     const user = await getUserID(userID)
     if (user == null) {
         res.statusCode = 401;
@@ -92,6 +92,53 @@ app.post("/game", async(req, res)=> {
     const { ID } = (await pool.query(insertQuery, [gameName,gameDesc,gameImg]))[0];
     res.send("Game added sucesfully", {ID})
 });
+
+app.put("/game/", async(req, res)=> {
+    const {gameName, gameDesc, gameImg } = req.body;
+    const gameId = req.params.id;
+
+    let query;
+    query = `
+    SELECT * FROM g3a.Games
+    WHERE g3a.Games.ID = ?
+    `
+
+    {/* Verify user session */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    {/* Validate that a user is an admin */}
+    if(user.userType != "admin"){
+        res.statusCode = 401;
+        res.send("Unauthorized")
+        return;
+    }
+
+    {/* Validate the GameID */}
+    if (!gameId) {
+        res.statusCode = 400;
+        res.send("Invalid GameID");
+        return;
+    }
+    
+    {/* Makes sure an admin alters atleast one element */}
+    if (!gameName && !gameDesc && !gameImg) {
+        res.statusCode = 400;
+        res.send("Choose atleast one element to change!");
+        return;
+    }
+
+    const updateQuery = `
+        UPDATE g3a.Games (Name, Description, ImageURL)
+        SET Name = ?, Description = ?, ImageURL = ?
+        WHERE ID = ?
+    `;
+    (await pool.query(updateQuery, [gameName,gameDesc,gameImg]))[0];
+})
 
 app.get('/game/:id', async (req, res) => {
     let query;
