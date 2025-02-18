@@ -61,9 +61,6 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         );
     }
 }
-// 
-//                     <img className="w-full h-full" src={"/"+this.state.game.ImageURL}></img>
-
 
 export default function Page(props: GamePageParameters) {
     return <GamePage id={React.use(props.params).id}></GamePage>

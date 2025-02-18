@@ -10,7 +10,7 @@ const pool = mariadb.createPool({
     host: 'localhost',
     user: 'root',
     socketPath: '/var/lib/maria/maria.sock',
-    connectionLimit: 5,
+    connectionLimit: 10,
     database: "g3a"
 });
 
@@ -314,6 +314,32 @@ app.put("/account", async(req, res)=>{
     (await pool.query(updateQuery, [hash, userID]))[0];
 })
 
+// Get account name
+app.get('/account', async (req, res) => {
+    const { session } = req.query;
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Unauthorized0");
+        return;
+    }
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized1");
+        return;
+    }
+
+    const user = await getUserID(userID);
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("Unauthorized2");
+        return;
+    }
+
+    res.send(user.Name);
+    return;
+});
 
 // Retrieves an user or null if no user is found
 const getUser = async (name) => {
@@ -329,11 +355,12 @@ const getUser = async (name) => {
             return result[0];
         }
     } catch (err) {
+        console.log(err);
         // Ignore errors in the query and just return null user
     }
     
     return null;
-}
+};
 
 const getUserID = async (userID) => {
     const query = `   
@@ -352,7 +379,7 @@ const getUserID = async (userID) => {
     }
     
     return null;
-}
+};
 
 // Creates a new session for user with userID
 const createSession = async (userID) => {
@@ -361,8 +388,7 @@ const createSession = async (userID) => {
         VALUES (?, ?);
     `;
 
-    const session = uuid.v4();
-
+    const session = uuid.v4().replace(/-/g,"");
     try {
         const result = await pool.query(query, [userID, session]);
         console.log(result);
@@ -372,7 +398,7 @@ const createSession = async (userID) => {
         return null;
     }
     return null;
-}
+};
 
 // Returns UserID from an session if it is actual (not too old)
 const verifySession = async (session) => {
@@ -386,11 +412,12 @@ const verifySession = async (session) => {
         if (result.length > 0) {
             // Found the session!
             // Check if it is not too old
-            if (checkTimestampValid(timestamp)) {
+            if (checkTimestampValid(result[0].Timestamp)) {
                 return result[0].UserID
             }
         }
     } catch (err) {
+        console.log(err);
         // Ignore errors and just return null
     }
     return null;
