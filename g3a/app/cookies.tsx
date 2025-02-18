@@ -32,10 +32,13 @@ export async function register(formData: FormData) {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name: name, password: password })
+        body: JSON.stringify({
+            username: formData.get("name"),
+            password: formData.get("password"),
+        }),
     });
 
-    if (response.ok == false) {
+    if (!response.ok) {
         return false;
     }
 

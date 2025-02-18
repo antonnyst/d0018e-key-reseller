@@ -1,15 +1,25 @@
 "use client";
 import Form from 'next/form';
 import { register } from '../cookies';
-import React from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
     const [status, setStatus] = React.useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const router = useRouter();
 
     async function action(formData: FormData) {
+        // Client-side validation
+        if (password !== confirmPassword) {
+            setStatus("Passwords do not match!");
+            return;
+        }
+
         const result = await register(formData);
         if (result) {
-            document.location.href = "/signup";
+            router.push("/user"); // Redirect to logged-in page
         } else {
             setStatus("Failed to sign up! Please try again.");
         }
@@ -24,14 +34,34 @@ export default function SignupPage() {
                     </div>
                     <div className="w-full">
                         <h1 className="text-center">Username</h1>
-                        <input name="name" className="border-black border w-full" />
+                        <input name="name" className="border-black border w-full"></input>
                     </div>
                     <div className="w-full">
                         <h1 className="text-center">Password</h1>
-                        <input name="password" type="password" className="border-black border w-full" />
+                        <input 
+                            name="password" 
+                            type="password" 
+                            className="border-black border w-full" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
                     <div className="w-full">
-                        <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Sign up!</button>
+                        <h1 className="text-center">Confirm Password</h1>
+                        <input 
+                            type="password" 
+                            className="border-black border w-full" 
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
+                    </div>
+                    <div className="w-full">
+                        <button 
+                            type="submit" 
+                            className="border-black border ml-[25%] mr-[25%] w-[50%]"
+                        >
+                            Sign up!
+                        </button>
                     </div>
                 </div>
             </Form>

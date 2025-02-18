@@ -242,6 +242,33 @@ app.post('/login', async (req, res) => {
     res.send(session);    
 });
 
+app.post('/signup', async (req, res) => {
+    const { name, password } = req.body;
+
+    // Validate input
+    if (!name || !password) {
+        return res.status(400).send("Username and password are required");
+    }
+
+    // Check if username already exists
+    const existingUser = await getUser(name);
+    if (existingUser) {
+        return res.status(409).send("Username already taken");
+    }
+
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Create new user
+    const result = await createUser(name, hashedPassword);
+    if (result) {
+        return res.status(201).send({ success: true, message: "User created successfully" });
+    } else {
+        return res.status(500).send("Failed to create user");
+    }
+});
+
 app.put("/account", async(req, res)=>{
     const {session, oldPassword, newPassword} = req.body;
     let query;
