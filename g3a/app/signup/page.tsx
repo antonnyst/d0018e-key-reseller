@@ -2,13 +2,11 @@
 import Form from 'next/form';
 import { register } from '../cookies';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
     const [status, setStatus] = React.useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const router = useRouter();
 
     async function action(formData: FormData) {
         // Client-side validation
@@ -19,7 +17,7 @@ export default function SignupPage() {
 
         const result = await register(formData);
         if (result) {
-            router.push("/user"); // Redirect to logged-in page
+            document.location.href = "/user"; // Redirect to logged-in page
         } else {
             setStatus("Failed to sign up! Please try again.");
         }

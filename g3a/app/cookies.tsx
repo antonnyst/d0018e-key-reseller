@@ -27,7 +27,7 @@ export async function register(formData: FormData) {
     const name = formData.get("name");
     const password = formData.get("password");
 
-    const response = await fetch("/api/register", {
+    const response = await fetch("/api/account", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
