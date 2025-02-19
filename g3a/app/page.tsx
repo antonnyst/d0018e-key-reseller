@@ -5,9 +5,9 @@ import React from "react";
 
 function gameCard(name: string, description: string, image_url: string, id: string) {
   return (
-    <button className="border-2 border-black grid"  key={id} onClick={() => {document.location.href="/game/"+id}}>
+    <button className="border-2 border-black grid h-[25em]"  key={id} onClick={() => {document.location.href="/game/"+id}}>
       <img className="aspect-square m-[5%] w-[90%]" src={"/"+image_url} alt={"Logo for " + name}></img>
-      <div className="">
+      <div className="overflow-hidden">
         <h1 className="font-bold text-center">{name}</h1>
         <p className="mt-2 text-left p-4">{description}</p>
       </div>

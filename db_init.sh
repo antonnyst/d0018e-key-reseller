@@ -154,7 +154,8 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"EEE4\", \"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\"),  \
     (\"EEE5\", \"...stack the blocks...\", \"eee.png\"),  \
     (\"EEE6\", \"...the blocks...\", \"eee.png\"),  \
-    (\"EEE7\", \"...blocks...\", \"eee.png\")  \
+    (\"EEE7\", \"...blocks...\", \"eee.png\"),  \
+    (\"Elden Loop: Timeless Trials in the Realm of Echoes\", \"Step into the captivating world of Elden Loop, a realm where time flows uniquely, offering endless opportunities for strategic play. The setting features a diverse array of biomes and environments, each with its own time-based nuances, creating a dynamic exploration experience.\", \"eldenloop.png\")  \
 "
 echo "games data inserted"
 
