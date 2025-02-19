@@ -365,7 +365,7 @@ app.get("/favorites", async (req, res) => {
         WHERE g3a.Favorites.UserID = ?
     `;
     try {
-        const result = await pool.query(query, [session]);
+        const result = await pool.query(query, [gameID]);
         return res.send(result);
     } catch (err) {
         console.log(err);
