@@ -271,12 +271,9 @@ app.post('/signup', async (req, res) => {
 
 app.put("/account", async(req, res)=>{
     const {session, oldPassword, newPassword} = req.body;
-    let query;
-    query = `
-        SELECT * FROM g3a.Users
-        WHERE g3a.Users.ID = ?
-    `;
-    
+    console.log(session);
+    console.log(oldPassword);
+    console.log(newPassword);
     {/* Verify user session */}
     const userID = await verifySession(session)
     if (userID == null || userID == false) {
@@ -294,7 +291,7 @@ app.put("/account", async(req, res)=>{
     }
     
     {/* Force user to enter old password */}
-    const result = await bcrypt.compare(oldPassword, user.PasswordHash);
+    let result = await bcrypt.compare(oldPassword, user.PasswordHash);
 
     if (result === false) {
         res.statusCode = 401;
@@ -306,12 +303,14 @@ app.put("/account", async(req, res)=>{
     const saltRounds = 10;
     const hash = await bcrypt.hash(newPassword.toString(), saltRounds);
     const updateQuery = `
-        UPDATE g3a.Users (PasswordHash)
+        UPDATE g3a.Users
         SET PasswordHash = ?
         WHERE ID = ?
     `;
     {/* Insert new password to database */}
-    (await pool.query(updateQuery, [hash, userID]))[0];
+    result = await pool.query(updateQuery, [hash, userID]);
+
+    return res.status(200).send("OK")
 })
 
 // Get account name
@@ -365,8 +364,8 @@ app.get("/favorites", async (req, res) => {
         WHERE g3a.Favorites.UserID = ?
     `;
     try {
-        const result = await pool.query(query, [gameID]);
-        return res.send(result);
+        const result = await pool.query(query, [userID]);
+        return res.send(result.map((favorite) => favorite.GameID));
     } catch (err) {
         console.log(err);
     }

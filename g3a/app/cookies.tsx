@@ -48,20 +48,3 @@ export async function register(formData: FormData) {
 export function logout() {
     deleteCookie("g3a-session");
 }
-
-
-type Props = {
-    className?: string
-}
-
-export const LogoutButton: React.FC<Props> = (props) => {
-    return (
-        <button className={props.className} onClick={()=>{
-            logout();
-            document.location.href="/"
-        }}>
-            Log out!
-        </button>
-    );
-}
-

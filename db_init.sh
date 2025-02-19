@@ -144,9 +144,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 echo "sessions table created"
 
-mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.Favorites (GameID, UserID) VALUES \
-    (1000, 1000)"
+
 
 # Lägg in default data
 mariadb --socket=/var/lib/maria/maria.sock -e "\
@@ -181,6 +179,10 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"12345YU7b4\") \
 "
 echo "key data inserted"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+    INSERT INTO g3a.Favorites (GameID, UserID) VALUES \
+    (1000, 1000)"
 
 
 echo "Done initializing database"
