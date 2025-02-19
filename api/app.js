@@ -341,6 +341,96 @@ app.get('/account', async (req, res) => {
     return;
 });
 
+app.get("/favorites", async (req, res) => {
+    const { session } = req.query;
+
+    {/* Verify user session */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    {/* Get user ID*/}
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+
+    const query = `
+        SELECT g3a.Favorites.GameID FROM g3a.Favorites
+        WHERE g3a.Favorites.UserID = ?
+    `;
+    try {
+        const result = await pool.query(query, [session]);
+        return res.send(result);
+    } catch (err) {
+        console.log(err);
+    }
+})
+app.post("/favorites", async (req, res) => {
+    const { session, gameID } = req.body;
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+    }
+
+    const query = `
+        INSERT INTO g3a.Favorites (UserID, GameID)
+        VALUES (?, ?);
+    `;
+    try {
+        const result = await pool.query(query, [userID, gameID]);
+        return res.send(result);
+    } catch (err) {
+        console.log(err);
+    }
+})
+app.delete("/favorites", async (req, res) => {
+    const { session, gameID } = req.body;
+
+    if(!gameID){
+        res.statusCode = 400;
+        res.send("Not a valid gameID");
+        return;
+    }
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+    }
+
+    const query = `
+    DELETE FROM g3a.Favorites( gameID)
+    WHERE g3a.Favorites.UserID = ? AND g3a.Favorites.GameID = ?;
+    `
+    try {
+        const result = await pool.query(query, [userID, gameID]);
+        return res.send(result);
+    } catch (err) {
+        console.log(err);
+        res.send("Could not delete favorite")
+    }
+})
+
 // Retrieves an user or null if no user is found
 const getUser = async (name) => {
     const query = `   
