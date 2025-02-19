@@ -144,6 +144,10 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 echo "sessions table created"
 
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+    INSERT INTO g3a.Favorites (GameID, UserID) VALUES \
+    (1000, 1000)"
+
 # Lägg in default data
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Games (Name, Description, ImageURL) VALUES \
