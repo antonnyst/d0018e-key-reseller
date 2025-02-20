@@ -101,7 +101,7 @@ export class UserPage extends React.Component<IProps, IState> {
                 GameID: "1001"
             }
         ];*/
-        const games: Key[] = this.state.keys ? this.state.keys : [];
+        const games: Key[] = this.state?.keys ? this.state.keys : [];
         const favorites: Favorite[] = this.state?.favorites ? this.state.favorites : [];
 
         return (

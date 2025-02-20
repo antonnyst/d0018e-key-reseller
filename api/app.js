@@ -430,6 +430,40 @@ app.delete("/favorites", async (req, res) => {
     }
 })
 
+app.get("/account/keys", async (req, res) => {
+    const { session } = req.query;
+
+    {/* Verify session */}
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    {/* Get userID */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+    }
+
+    try{
+        query= `
+        SELECT g3a.Keys.GameID, g3a.Keys.KeyString
+        FROM g3a.Keys WHERE g3a.Keys.ID IN (
+            SELECT g3a.OrderKeys.KeyID FROM g3a.OrderKeys        
+            WHERE g3a.OrderKeys.OrderID IN (
+                SELECT g3a.Order.ID FROM g3a.Order
+                WHERE g3a.Order.UserID = ? ))
+        `
+        const result = await pool.query(query, [userID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
+        return
+    }
+})
+
 // Retrieves an user or null if no user is found
 const getUser = async (name) => {
     const query = `   

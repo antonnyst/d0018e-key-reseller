@@ -83,9 +83,10 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     );\
 "
 echo "key table created"
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Keys AUTO_INCREMENT=30000;"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
-    CREATE TABLE g3a.Transactions ( \
+    CREATE TABLE g3a.Order ( \
         ID INT NOT NULL AUTO_INCREMENT, \
         Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
         Sum VARCHAR(50) NOT NULL, \
@@ -95,16 +96,15 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     );\
 "
 echo "transactions table created"
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Order AUTO_INCREMENT=1000;"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
-    CREATE TABLE g3a.TransactionKeys ( \
-        TransactionID INT NOT NULL, \
+    CREATE TABLE g3a.OrderKeys ( \
+        OrderID INT NOT NULL, \
         KeyID INT NOT NULL, \
-        PriceID INT NOT NULL, \
-        PRIMARY KEY (TransactionID, KeyID, PriceID), \
-        FOREIGN KEY (TransactionID) REFERENCES g3a.Transactions(ID) ON DELETE CASCADE, \
-        FOREIGN KEY (KeyID) REFERENCES g3a.Keys(ID) ON DELETE CASCADE, \
-        FOREIGN KEY (PriceID) REFERENCES g3a.Prices(ID) ON DELETE CASCADE \
+        PRIMARY KEY (OrderID, KeyID), \
+        FOREIGN KEY (OrderID) REFERENCES g3a.Order(ID) ON DELETE CASCADE, \
+        FOREIGN KEY (KeyID) REFERENCES g3a.Keys(ID) ON DELETE CASCADE\
     );\
 "
 echo "transaction key table created"
@@ -166,6 +166,24 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"root\", \"\$2b\$10\$dn7MXvxWxdZOe1\/RSfYZSeEAoqetH\/sWC41LKizH7fRRFM\/3wBEfK\") \
 "
 #echo "users data inserted"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+    INSERT INTO g3a.Keys (KeyString, GameID ) VALUES \
+    (\"asjfnajsf\",  \"1000\"), \
+    (\"idididid\",  \"1000\"), \
+    (\"209420jfj202\",  \"1008\")
+"
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+    INSERT INTO g3a.Order (UserID, Sum ) VALUES \
+    (\"1000\",  \"5000\")
+    "
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+    INSERT INTO g3a.OrderKeys (OrderID, KeyID ) VALUES \
+    (\"1000\",  \"30000\"),\
+    (\"1000\",  \"30001\"), \
+    (\"1000\",  \"30002\")
+    "
+
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Tags (Name) VALUES \
