@@ -464,6 +464,51 @@ app.get("/account/keys", async (req, res) => {
     }
 })
 
+// Gets all orders and information
+// admin only
+app.get("/orders", async (req, res) => {
+    const { session } = req.query;
+
+    // Verify session
+    if (session == undefined) {
+        res.statusCode = 401;
+        res.send("No session provided");
+        return;
+    }
+
+    // Get userID
+    const userID = await verifySession(session);
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    const user = await getUserID(userID);
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    if (user.UserType !== "admin") {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    
+    try{
+        query= `
+            SELECT * FROM g3a.Order
+        `
+        const result = await pool.query(query, [userID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
+        return
+    }
+})
+
 // Retrieves an user or null if no user is found
 const getUser = async (name) => {
     const query = `   

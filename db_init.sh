@@ -162,8 +162,8 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 echo "games data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.Users (Name, PasswordHash) VALUES \
-    (\"root\", \"\$2b\$10\$dn7MXvxWxdZOe1\/RSfYZSeEAoqetH\/sWC41LKizH7fRRFM\/3wBEfK\") \
+    INSERT INTO g3a.Users (Name, PasswordHash, UserType) VALUES \
+    (\"root\", \"\$2b\$10\$dn7MXvxWxdZOe1\/RSfYZSeEAoqetH\/sWC41LKizH7fRRFM\/3wBEfK\", \"admin\") \
 "
 #echo "users data inserted"
 
