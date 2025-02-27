@@ -49,6 +49,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     );\
 "
 echo "tags table created"
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Tags AUTO_INCREMENT=50000;"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.GameTags ( \
@@ -188,15 +189,18 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Tags (Name) VALUES \
     (\"Action\"), \
-    (\"Online Co-Op\") \
+    (\"Online Co-Op\"), \
+    (\"Puzzle\") 
 "
 echo "tags data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.Keys (KeyString) VALUES \
-    (\"12345YU7b4\") \
+    INSERT INTO g3a.GameTags (GameID, TagID) VALUES \
+    (1008, 50000), \
+    (1000, 50001), \
+    (1001, 50002) 
 "
-echo "key data inserted"
+echo "gametags data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Favorites (GameID, UserID) VALUES \

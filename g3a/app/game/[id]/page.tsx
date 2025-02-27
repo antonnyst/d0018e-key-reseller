@@ -19,6 +19,7 @@ interface Game {
     Description: string,
     active: boolean,
     ImageURL: string,
+    GameTags: string,
   }
   
 
@@ -26,7 +27,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
     componentDidMount(): void {
         fetch("/api/game/"+this.props.id)
             .then(response => { return response.json()})
-            .then(json => { console.log(json); this.setState({game: json}) })
+            .then(json => { console.log(json); this.setState({game: json}) })         
             .catch(err => console.log(err));
     }
 
@@ -34,6 +35,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         if (this.state?.game == undefined) {
             return <div><p>Loading game...</p></div>
         }
+
         return (
             <div className="bg-gray-100">
                 <div className="p-8 grid grid-cols-5 grid-rows-3 gap-4 h-lvh rounded-lg shadow-md">
@@ -54,7 +56,11 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                         <img className="h-full w-full" src={"/"+this.state.game.ImageURL}></img>
                     </div>
                     <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg">
-                        
+                    <div className="w-full flex">
+                        <p className="flex-1">Categories</p>
+                        <div className="flex flex-wrap gap-2">{this.state.game.GameTags}
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>

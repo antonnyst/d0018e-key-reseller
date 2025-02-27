@@ -166,6 +166,114 @@ app.get('/game/:id', async (req, res) => {
     res.send(result[0]);
 });
 
+app.get("/tags/:gameID", async (req, res) => {
+    const { gameID } = req.params;
+
+    if (!gameID) {
+        return res.status(400).send("Invalid Game ID");
+    }
+
+    const query = `
+    SELECT g3a.Tags.ID, g3a.Tags.Name
+    FROM g3a.Tags
+    WHERE g3a.Tags.ID IN (
+        SELECT g3a.GameTags.TagID
+        FROM g3a.GameTags
+        WHERE g3a.GameTags.GameID = ?
+    );
+    `;
+
+    try {
+        const result = await pool.query(query, [gameID]);
+        return res.send(result);
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error fetching tags");
+    }
+});
+
+// Add a tag to a game
+app.post('/tags', async (req, res) => {
+    const { session, gameID, tagName } = req.body;
+
+    const userID = await verifySession(session);
+    if (!userID) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    const user = await getUserID(userID);
+    if (!user || user.userType !== "admin") {
+        return res.status(403).send("Only admins can add tags");
+    }
+
+    if (!gameID || !tagName) {
+        return res.status(400).send("Game ID and Tag Name are required");
+    }
+
+    try {
+        // Check if tag exists, otherwise create it
+        let tagQuery = `SELECT ID FROM g3a.Tags WHERE Name = ?`;
+        let tagResult = await pool.query(tagQuery, [tagName]);
+
+        let tagID;
+        if (tagResult.length === 0) {
+            const insertTagQuery = `INSERT INTO g3a.Tags (Name) VALUES (?) RETURNING ID;`;
+            tagID = (await pool.query(insertTagQuery, [tagName]))[0].ID;
+        } else {
+            tagID = tagResult[0].ID;
+        }
+
+        // Insert into GameTags
+        const insertGameTagQuery = `INSERT INTO g3a.GameTags (GameID, TagID) VALUES (?, ?);`;
+        await pool.query(insertGameTagQuery, [gameID, tagID]);
+
+        return res.send({ success: true, message: "Tag added successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error adding tag");
+    }
+});
+
+// Remove a tag from a game
+app.delete('/tags', async (req, res) => {
+    const { session, gameID, tagName } = req.body;
+
+    const userID = await verifySession(session);
+    if (!userID) {
+        return res.status(401).send("Unauthorized");
+    }
+
+    const user = await getUserID(userID);
+    if (!user || user.userType !== "admin") {
+        return res.status(403).send("Only admins can remove tags");
+    }
+
+    if (!gameID || !tagName) {
+        return res.status(400).send("Game ID and Tag Name are required");
+    }
+
+    try {
+        // Find the tag ID
+        const tagQuery = `SELECT ID FROM g3a.Tags WHERE Name = ?`;
+        const tagResult = await pool.query(tagQuery, [tagName]);
+
+        if (tagResult.length === 0) {
+            return res.status(404).send("Tag not found");
+        }
+
+        const tagID = tagResult[0].ID;
+
+        // Delete from GameTags
+        const deleteGameTagQuery = `DELETE FROM g3a.GameTags WHERE GameID = ? AND TagID = ?;`;
+        await pool.query(deleteGameTagQuery, [gameID, tagID]);
+
+        return res.send({ success: true, message: "Tag removed successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send("Error removing tag");
+    }
+});
+
 app.post('/account', async (req, res) => {
     const { name, password } = req.body;
     let query;
