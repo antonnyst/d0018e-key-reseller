@@ -17,7 +17,7 @@ const LogoutButton: React.FC<Props> = (props) => {
             logout();
             document.location.href="/"
         }}>
-            Log out!
+            Log out!        
         </button>
     );
 }
