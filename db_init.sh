@@ -213,7 +213,9 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \
     (1008, 50000), \
     (1000, 50001), \
-    (1001, 50002) 
+    (1001, 50002), \
+    (1002, 50002), \
+    (1008, 50001) 
 "
 echo "gametags data inserted"
 

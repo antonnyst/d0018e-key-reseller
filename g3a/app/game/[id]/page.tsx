@@ -6,11 +6,16 @@ type GamePageParameters = {
 }
 
 type GamePageProperties = {
-    id: string;
+    id: string,
 }
 
 type GamePageState = {
     game?: Game
+    tags?: GameTag[]
+}
+
+type GameTag = {
+    Name: string,
 }
 
 interface Game {
@@ -19,7 +24,6 @@ interface Game {
     Description: string,
     active: boolean,
     ImageURL: string,
-    GameTags: string,
   }
   
 
@@ -29,12 +33,28 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             .then(response => { return response.json()})
             .then(json => { console.log(json); this.setState({game: json}) })         
             .catch(err => console.log(err));
+        
+        fetch("/api/gametags?id=" + this.props.id)
+            .then(response => {console.log(response); return response.json()})
+            .then((json: GameTag[]) => {
+                json.forEach((key: GameTag) => {
+                    let tags = this.state?.tags;
+                    if (tags == undefined) {
+                        tags = [];
+                    }
+                    tags.push(key)
+                    this.setState({"tags": tags});
+                });
+            })
+            .catch(err => console.error("Error fetching gametags:", err)); 
     }
+    
 
     render(): React.ReactNode {
         if (this.state?.game == undefined) {
             return <div><p>Loading game...</p></div>
         }
+        const tags: GameTag[] = this.state?.tags ? this.state.tags : [];
 
         return (
             <div className="bg-gray-100">
@@ -55,12 +75,25 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                     <div className="bg-white col-span-2 row-span-2 border p-8 rounded-lg">
                         <img className="h-full w-full" src={"/"+this.state.game.ImageURL}></img>
                     </div>
+                    <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg"></div>
+
+                    {/* tags on games */}
                     <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg">
-                    <div className="w-full flex">
+
+                        <div className="w-full flex">
                         <p className="flex-1">Categories</p>
-                        <div className="flex flex-wrap gap-2">{this.state.game.GameTags}
+                            <div className="flex flex-wrap gap-2">                    
+                                {tags.length > 0 ? (
+                                    tags.map((game: GameTag, index) => (
+                                        <button key={index} className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex-1 ml-4 my-auto text-left">
+                                            {game.Name}
+                                        </button>
+                                    ))
+                                    ) : (
+                                <p className="text-gray-500 text-center">No tags added yet.</p>
+                                )}
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </div>

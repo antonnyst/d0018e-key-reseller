@@ -29,9 +29,17 @@ app.get('/game', async (req, res) => {
                 (g3a.Games.Name LIKE '%${req.query.search}%') OR 
                 (g3a.Games.Description LIKE '%${req.query.search}%')
         `
+    
     } else {
+        if (req.query.search) {
+            // Search tags with string
+            query = `
+                SELECT * FROM g3a.GameTags
+                WHERE 
+                    (g3a.GameTags.Name LIKE '%${req.query.search}%')
+            `
         // Get all games
-        query = "SELECT * FROM g3a.Games"
+        }else {query = "SELECT * FROM g3a.Games"}
     }
 
     let conn;
@@ -166,34 +174,35 @@ app.get('/game/:id', async (req, res) => {
     res.send(result[0]);
 });
 
-app.get("/tags/:gameID", async (req, res) => {
-    const { gameID } = req.params;
+app.get("/gametags", async (req, res) => {
+    const { id } = req.query;
 
-    if (!gameID) {
-        return res.status(400).send("Invalid Game ID");
+    {/* Get game ID*/}
+    const game = await getGameID(id)
+    if (game == null) {
+        res.statusCode = 401;
+        res.send("No game found");
+        return;
     }
 
-    const query = `
-    SELECT g3a.Tags.ID, g3a.Tags.Name
-    FROM g3a.Tags
-    WHERE g3a.Tags.ID IN (
-        SELECT g3a.GameTags.TagID
-        FROM g3a.GameTags
-        WHERE g3a.GameTags.GameID = ?
-    );
-    `;
-
-    try {
-        const result = await pool.query(query, [gameID]);
+    try{
+        query=`
+        SELECT g3a.Tags.Name FROM g3a.Tags 
+        WHERE g3a.Tags.ID IN (
+            SELECT g3a.GameTags.TagID FROM g3a.GameTags
+            WHERE g3a.GameTags.GameID = ?
+        )
+        `;
+        const result = await pool.query(query, [id]);
         return res.send(result);
     } catch (err) {
-        console.error(err);
-        return res.status(500).send("Error fetching tags");
+        console.log(err);
+        return res.status(500).send("Error getting tag");
     }
-});
+})
 
 // Add a tag to a game
-app.post('/tags', async (req, res) => {
+app.post('/gametags', async (req, res) => {
     const { session, gameID, tagName } = req.body;
 
     const userID = await verifySession(session);
@@ -235,7 +244,7 @@ app.post('/tags', async (req, res) => {
 });
 
 // Remove a tag from a game
-app.delete('/tags', async (req, res) => {
+app.delete('/gametags', async (req, res) => {
     const { session, gameID, tagName } = req.body;
 
     const userID = await verifySession(session);
@@ -272,7 +281,30 @@ app.delete('/tags', async (req, res) => {
         console.error(err);
         return res.status(500).send("Error removing tag");
     }
-});
+}); 
+
+/*app.get('/tags', async (req, res) => {
+    let query;
+    if (req.query.search) {
+        // Search with string
+        query = `
+            SELECT * FROM g3a.Tags 
+            WHERE 
+                (g3a.Tags.Name LIKE '%${req.query.search}%')
+        `
+    } else {
+        // Get all tags
+        query = "SELECT * FROM g3a.Tags"
+    }
+
+    let result;
+    try {
+        result = await pool.query(query);
+    } catch (err) {
+        throw err;
+    }
+    res.send(result);
+});*/
 
 app.post('/account', async (req, res) => {
     const { name, password } = req.body;
@@ -795,3 +827,22 @@ const checkTimestampValid = async (timestamp) => {
 app.listen(port, () => {
     console.log(`API listening on ${port}`)
 })
+
+const getGameID = async (gameID) => {
+    const query = `   
+        SELECT * FROM g3a.Games 
+        WHERE g3a.Games.ID = ?
+    `;
+    
+    try {
+        const result = await pool.query(query, [gameID]);
+        if (result.length > 0) {
+            // There is an game with id
+            return result[0];
+        }
+    } catch (err) {
+        // Ignore errors in the query and just return null user
+    }
+    
+    return null;
+};
