@@ -43,7 +43,7 @@ echo "auto increment set"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Reviews ( \
-        ID INT NOT NULL AUTO_INCREMENT. \
+        ID INT NOT NULL AUTO_INCREMENT, \
         Description TEXT NOT NULL, \
         Positive BOOLEAN NOT NULL, \
         GameID INT NOT NULL, \
