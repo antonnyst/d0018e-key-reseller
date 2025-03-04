@@ -696,11 +696,14 @@ app.get("/users", async (req, res) => {
 
 app.get("/reviews", async (req, res) => {
     let query;
+    if(req.query.GameID){
     query = `
             SELECT * FROM g3a.Reviews
+            WHERE g3a.Reviews.GameId = ?
         `
+    }
     try{
-        result = await pool.query(query);
+        result = await pool.query(query, [req.query.GameID]);
     }catch(err){
         console.log(err);
     }

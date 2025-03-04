@@ -210,6 +210,11 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 echo "tags data inserted"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
+  INSERT INTO g3a.Reviews (ID, GameID, UserID, Positive, Description) VALUES \
+  (\"1\", \"1000\", \"1000\", \"1\", \"I LIKE GAME\")
+"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \
     (1008, 50000), \
     (1000, 50001), \
