@@ -694,7 +694,51 @@ app.get("/users", async (req, res) => {
     }
 })
 
-// Retrieves an user or null if no user is found
+app.get("/reviews", async (req, res) => {
+    let query;
+    if(req.query.GameID){
+    query = `
+            SELECT * FROM g3a.Reviews
+            WHERE g3a.Reviews.GameId = ?
+        `
+    }
+    try{
+        result = await pool.query(query, [req.query.GameID]);
+    }catch(err){
+        console.log(err);
+    }
+    res.send(result);
+})
+
+app.post("/reviews", async (req, res) => {
+    const { revDesc, revPos, session, gameID } = req.body;
+
+    {/* Verify user session */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+    const query = `
+        INSERT INTO g3a.Reviews (userID, gameID, revDesc, revPos)
+        VALUES (?,?,?,?,?)
+    `
+    try{
+        const result = await pool.query(query, [userID, gameID, revDesc, revPos]);
+        return res.send(result);
+    } catch (err) {
+        console.log(err);
+    }
+
+})
+// Retrieves a user or null if no user is found
 const getUser = async (name) => {
     const query = `   
         SELECT * FROM g3a.Users 
