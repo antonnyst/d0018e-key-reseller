@@ -42,6 +42,21 @@ mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Users AUTO_INCREM
 echo "auto increment set"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
+    CREATE TABLE g3a.Reviews ( \
+        ID INT NOT NULL AUTO_INCREMENT, \
+        Description TEXT NOT NULL, \
+        Positive BOOLEAN NOT NULL, \
+        GameID INT NOT NULL, \
+        UserID INT NOT NULL, \
+        PRIMARY KEY (ID), \
+        FOREIGN KEY (GameID) REFERENCES g3a.Games(ID) ON DELETE CASCADE, \
+        FOREIGN KEY (UserID) REFERENCES g3a.Users(ID) ON DELETE CASCADE \
+    );\
+"
+echo "Reviews table created"
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Reviews AUTO_INCREMENT=1;"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Tags ( \
         ID INT NOT NULL AUTO_INCREMENT, \
         Name VARCHAR(50) NOT NULL UNIQUE, \
@@ -193,6 +208,12 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"Puzzle\") 
 "
 echo "tags data inserted"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
+  INSERT INTO g3a.Reviews (ID, GameID, UserID, Positive, Description) VALUES \
+  (\"1\", \"1000\", \"1000\", \"1\", \"I LIKE GAME\"), \
+  (\"2\", \"1000\", \"1000\", \"0\", \"I THINK GAME NOT GOOD LIKE MINECRAFT MOVIE\")
+"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \
