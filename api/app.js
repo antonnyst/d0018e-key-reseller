@@ -21,35 +21,37 @@ app.use(express.json());
 // search string genom /game?search=text
 app.get('/game', async (req, res) => {
     let query;
+    let params = [];
+
     if (req.query.search) {
-        // Search with string
+        // Search for games based on Name, Description, or Tags
         query = `
             SELECT * FROM g3a.Games 
             WHERE 
-                (g3a.Games.Name LIKE '%${req.query.search}%') OR 
-                (g3a.Games.Description LIKE '%${req.query.search}%')
-            `    
-                /*SELECT * FROM g3a.Tags
-                WHERE 
-                    g3a.Tags.Name IN (
-                    SELECT g3a.GameTags
-                    WHERE (g3a.GameTags LIKE '%${req.query.search}%')*/
-            
-        
+                Name LIKE ? 
+                OR Description LIKE ? 
+                OR ID IN (
+                    SELECT GameID FROM g3a.GameTags 
+                    WHERE TagID IN (
+                        SELECT ID FROM g3a.Tags WHERE Name LIKE ?
+                    )
+                )
+        `;
+        const searchTerm = `%${req.query.search}%`;
+        params = [searchTerm, searchTerm, searchTerm];
     
     } else {
         // Get all games
         query = "SELECT * FROM g3a.Games"
     }
 
-    let conn;
-    let result;
-    try {
-        result = await pool.query(query);
+try {
+        const result = await pool.query(query, params);  // ✅ params is always defined
+        res.json(result);
     } catch (err) {
-        throw err;
+        console.error("Database Query Error:", err);
+        res.status(500).json({ error: "Internal Server Error" });
     }
-    res.send(result);
 });
 
 app.post("/game", async(req, res)=> {
