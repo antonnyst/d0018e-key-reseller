@@ -35,18 +35,11 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             .catch(err => console.log(err));
         
         fetch("/api/gametags?id=" + this.props.id)
-            .then(response => {console.log(response); return response.json()})
+            .then(response => response.json())
             .then((json: GameTag[]) => {
-                json.forEach((key: GameTag) => {
-                    let tags = this.state?.tags;
-                    if (tags == undefined) {
-                        tags = [];
-                    }
-                    tags.push(key)
-                    this.setState({"tags": tags});
-                });
+                this.setState({ tags: json }); 
             })
-            .catch(err => console.error("Error fetching gametags:", err)); 
+        .catch(err => console.error("Error fetching gametags:", err)); 
     }
     
 
@@ -85,7 +78,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                             <div className="flex flex-wrap gap-2">                    
                                 {tags.length > 0 ? (
                                     tags.map((game: GameTag, index) => (
-                                        <button key={index} className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex-1 ml-4 my-auto text-left">
+                                        <button key={index} className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex-1 ml-4 my-auto text-center">
                                             {game.Name}
                                         </button>
                                     ))

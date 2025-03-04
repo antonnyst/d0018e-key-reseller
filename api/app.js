@@ -28,18 +28,18 @@ app.get('/game', async (req, res) => {
             WHERE 
                 (g3a.Games.Name LIKE '%${req.query.search}%') OR 
                 (g3a.Games.Description LIKE '%${req.query.search}%')
-        `
+            `    
+                /*SELECT * FROM g3a.Tags
+                WHERE 
+                    g3a.Tags.Name IN (
+                    SELECT g3a.GameTags
+                    WHERE (g3a.GameTags LIKE '%${req.query.search}%')*/
+            
+        
     
     } else {
-        if (req.query.search) {
-            // Search tags with string
-            query = `
-                SELECT * FROM g3a.GameTags
-                WHERE 
-                    (g3a.GameTags.Name LIKE '%${req.query.search}%')
-            `
         // Get all games
-        }else {query = "SELECT * FROM g3a.Games"}
+        query = "SELECT * FROM g3a.Games"
     }
 
     let conn;
