@@ -1,5 +1,7 @@
 "use client"
 import React from "react";
+import Form from 'next/form'
+import {getCookie} from "cookies-next";
 
 type GamePageParameters = {
     params: Promise<GamePageProperties>
@@ -34,6 +36,27 @@ interface Review {
     UserID: string,
 }
 
+async function postReview(formdata: FormData) {
+    const userID = formdata.get("RUserID");
+    const description = formdata.get("RUserDescription");
+    const positive = formdata.get("RUserPositive");
+    const gameID = formdata.get("RGameID");
+    const cookie = getCookie("g3a-session");
+    try{
+        const response = await fetch("/api/reviews", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({userID: userID, description: description, positive: positive, gameID: gameID, session: cookie }),
+        })
+        if(response){
+            console.log(response);
+        }
+    }catch(err){
+        console.log(err);
+    }
+}
 
 
 class GamePage extends React.Component<GamePageProperties, GamePageState> {
@@ -55,7 +78,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             .then(json => {console.log(json); this.setState({review: json}) })
             .catch(err => console.error("Error fetching reviews:", err));
     }
-    
+
 
     render(): React.ReactNode {
         if (this.state?.game == undefined) {
@@ -99,6 +122,29 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                                 )}
                             </div>
                         </div>
+                        <Form action={postReview}>
+                            <div className="bg-white col-span-3 row-span-2 border p-8 rounded-lg flex">
+                                <div className="w-full">
+                                    <h1 className="text-center">Enter your user id:</h1>
+                                    <input name="RUserID" className="border-black border w-full"></input>
+                                </div>
+                                <div className="w-full">
+                                    <h1 className="text-center">What you think:</h1>
+                                    <input name="RUserDescription" className="border-black border w-full"></input>
+                                </div>
+                                <div className="w-full">
+                                    <h1 className="text-center">You like game? Type 1 or 0:</h1>
+                                    <input name="RUserPositive" className="border-black border w-full"></input>
+                                </div>
+                                <div className="w-full">
+                                    <h1 className="text-center">Type the game ID:</h1>
+                                    <input name="RGameID" className="border-black border w-full"></input>
+                                </div>
+                                <div className="w-full">
+                                    <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Send Review!</button>
+                                </div>
+                            </div>
+                        </Form>
                     </div>
 
                     {/* tags on games */}

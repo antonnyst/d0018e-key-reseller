@@ -713,7 +713,7 @@ app.get("/reviews", async (req, res) => {
 })
 
 app.post("/reviews", async (req, res) => {
-    const { revDesc, revPos, session, gameID } = req.body;
+    const { description, positive, session, gameID } = req.body;
 
     {/* Verify user session */}
     const userID = await verifySession(session)
@@ -729,12 +729,14 @@ app.post("/reviews", async (req, res) => {
         return;
     }
     const query = `
-        INSERT INTO g3a.Reviews (userID, gameID, revDesc, revPos)
-        VALUES (?,?,?,?,?)
+        INSERT INTO g3a.Reviews (userID, gameID, Description, Positive)
+        VALUES (?,?,?,?)
     `
     try{
-        const result = await pool.query(query, [userID, gameID, revDesc, revPos]);
-        return res.send(result);
+        const result = await pool.query(query, [userID, gameID, description, positive]);
+        if(result){
+            return res.send("ok")
+        }
     } catch (err) {
         console.log(err);
     }
