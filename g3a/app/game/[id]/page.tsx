@@ -36,24 +36,24 @@ interface Review {
     UserID: string,
 }
 
-async function postReview(formdata: FormData) {
-    const userID = formdata.get("RUserID");
+async function postReview(formdata: FormData, GameID: string | undefined) {
     const description = formdata.get("RUserDescription");
     const positive = formdata.get("RUserPositive");
-    const gameID = formdata.get("RGameID");
+    const gameID = GameID;
     const cookie = getCookie("g3a-session");
-    try{
+
+    try {
         const response = await fetch("/api/reviews", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({userID: userID, description: description, positive: positive, gameID: gameID, session: cookie }),
+            body: JSON.stringify({description: description, positive: positive, gameID: gameID, session: cookie}),
         })
-        if(response){
+        if (response) {
             console.log(response);
         }
-    }catch(err){
+    } catch (err) {
         console.log(err);
     }
 }
@@ -61,21 +61,31 @@ async function postReview(formdata: FormData) {
 
 class GamePage extends React.Component<GamePageProperties, GamePageState> {
     componentDidMount(): void {
-        fetch("/api/game/"+this.props.id)
-            .then(response => { return response.json()})
-            .then(json => { console.log(json); this.setState({game: json}) })         
+        fetch("/api/game/" + this.props.id)
+            .then(response => {
+                return response.json()
+            })
+            .then(json => {
+                console.log(json);
+                this.setState({game: json})
+            })
             .catch(err => console.log(err));
-        
+
         fetch("/api/gametags?id=" + this.props.id)
             .then(response => response.json())
             .then((json: GameTag[]) => {
-                this.setState({ tags: json }); 
+                this.setState({tags: json});
             })
-        .catch(err => console.error("Error fetching gametags:", err));
+            .catch(err => console.error("Error fetching gametags:", err));
 
         fetch("/api/reviews?GameID=" + this.props.id)
-            .then(response => {return response.json()})
-            .then(json => {console.log(json); this.setState({review: json}) })
+            .then(response => {
+                return response.json()
+            })
+            .then(json => {
+                console.log(json);
+                this.setState({review: json})
+            })
             .catch(err => console.error("Error fetching reviews:", err));
     }
 
@@ -86,6 +96,8 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         }
         const tags: GameTag[] = this.state?.tags ? this.state.tags : [];
         const review: Review[] = this.state?.review ? this.state.review : [];
+
+        const handleReview = (formData: FormData) => postReview(formData, this.state?.game?.ID);
 
         return (
             <div className="bg-gray-100">
@@ -104,7 +116,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                         </div>
                     </div>
                     <div className="bg-white col-span-2 row-span-2 border p-8 rounded-lg">
-                        <img className="h-full w-full" src={"/"+this.state.game.ImageURL}></img>
+                        <img className="h-full w-full" src={"/" + this.state.game.ImageURL}></img>
                     </div>
                     {/* reviews */}
                     <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg">
@@ -113,8 +125,10 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                             <div className="flex flex-wrap gap-2">
                                 {review.length > 0 ? (
                                     review.map((game: Review, index) => (
-                                        <button key={index} className="p-4 bg-amber-800 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left">
-                                            User: {game.UserID} recommends game: {game.Positive?"TRUE":"FALSE"} and says: {game.Description}
+                                        <button key={index}
+                                                className="p-4 bg-amber-800 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left">
+                                            User: {game.UserID} recommends game: {game.Positive ? "TRUE" : "FALSE"} and
+                                            says: {game.Description}
                                         </button>
                                     ))
                                 ) : (
@@ -122,12 +136,9 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                                 )}
                             </div>
                         </div>
-                        <Form action={postReview}>
+                        {this.state.game && this.state.game.ID && (
+                        <Form action={handleReview}>
                             <div className="bg-white col-span-3 row-span-2 border p-8 rounded-lg flex">
-                                <div className="w-full">
-                                    <h1 className="text-center">Enter your user id:</h1>
-                                    <input name="RUserID" className="border-black border w-full"></input>
-                                </div>
                                 <div className="w-full">
                                     <h1 className="text-center">What you think:</h1>
                                     <input name="RUserDescription" className="border-black border w-full"></input>
@@ -137,14 +148,13 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                                     <input name="RUserPositive" className="border-black border w-full"></input>
                                 </div>
                                 <div className="w-full">
-                                    <h1 className="text-center">Type the game ID:</h1>
-                                    <input name="RGameID" className="border-black border w-full"></input>
-                                </div>
-                                <div className="w-full">
-                                    <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Send Review!</button>
+                                    <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Send
+                                        Review!
+                                    </button>
                                 </div>
                             </div>
                         </Form>
+                        )}
                     </div>
 
                     {/* tags on games */}
@@ -152,15 +162,16 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
 
                         <div className="w-full flex">
                             <p className="flex-1">Categories</p>
-                            <div className="flex flex-wrap gap-2">                    
+                            <div className="flex flex-wrap gap-2">
                                 {tags.length > 0 ? (
                                     tags.map((game: GameTag, index) => (
-                                        <button key={index} className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex-1 ml-4 my-auto text-center">
+                                        <button key={index}
+                                                className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex-1 ml-4 my-auto text-center">
                                             {game.Name}
                                         </button>
                                     ))
-                                    ) : (
-                                <p className="text-gray-500 text-center">No tags added yet.</p>
+                                ) : (
+                                    <p className="text-gray-500 text-center">No tags added yet.</p>
                                 )}
                             </div>
                         </div>
