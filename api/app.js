@@ -71,7 +71,7 @@ app.get('/game', async (req, res) => {
 
 app.post("/game", async(req, res)=> {
     const {gameName, gameDesc, gameImg } = req.body;
-    const session = req.query.session; 
+    const session = req.query.session;
 
     {/* Verify user session */}
     const userID = await verifySession(session)
@@ -111,7 +111,7 @@ app.post("/game", async(req, res)=> {
 
     {/* Insert game and get game Id */}
     const { ID } = (await pool.query(insertQuery, [gameName,gameDesc,gameImg]))[0];
-    
+
     res.send("Game added sucesfully")
     return;
 });
@@ -557,8 +557,6 @@ app.post("/favorites", async (req, res) => {
         console.log(err);
     }
 })
-
-
 app.delete("/favorites", async (req, res) => {
     const { session, gameID } = req.body;
 
@@ -697,6 +695,56 @@ app.get("/keys", async (req, res) => {
     } catch(err) {
         console.log(err);
         return res.status(500).send("Internal Server Error")
+    }
+})
+
+app.get("/basket", async (req, res) => {
+    const { session } = req.query;
+
+    {/* Verify session */}
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    {/* Get userID */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+    }
+    try {
+        query= `
+        SELECT g3a.Keys.GameID, g3a.Keys.KeyString FROM g3a.Keys
+        WHERE g3a.Keys.ID IN (
+            SELECT g3a.Basket.KeyID FROM g3a.Basket
+            WHERE g3a.Basket.UserID = ?
+            )
+        `
+        const result = await pool.query(query, [userID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
+    }
+})
+app.post("/basket", async (req, res) => {
+    const { session, keyID } = req.body;
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    try{
+        query = `
+            INSERT INTO g3a.Basket (userID, keyID)
+            VALUES (?, ?);
+        `
+        const result = await pool.query(query, [userID, keyID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
     }
 })
 
@@ -840,7 +888,7 @@ app.post("/reviews", async (req, res) => {
 // For checking if user is admin
 app.get("/admin", async (req, res) => {
     const { session } = req.query;
-    
+
     const userID = await verifySession(session)
     if (userID == null || userID == false) {
         res.statusCode = 401;
