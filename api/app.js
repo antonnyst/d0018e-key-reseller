@@ -22,45 +22,56 @@ app.use(express.json());
 app.get('/game', async (req, res) => {
     let query;
     let params = [];
+    let session = req.query.session;
 
     if (req.query.search) {
         // Search for games based on Name, Description, or Tags
         query = `
             SELECT * FROM g3a.Games 
             WHERE 
-                Name LIKE ? 
-                OR Description LIKE ? 
-                OR ID IN (
-                    SELECT GameID FROM g3a.GameTags 
-                    WHERE TagID IN (
-                        SELECT ID FROM g3a.Tags WHERE Name LIKE ?
+                active = 1 AND (
+                    Name LIKE ? 
+                    OR Description LIKE ? 
+                    OR ID IN (
+                        SELECT GameID FROM g3a.GameTags 
+                        WHERE TagID IN (
+                            SELECT ID FROM g3a.Tags WHERE Name LIKE ?
+                        )
                     )
                 )
+            ORDER BY ID
         `;
         const searchTerm = `%${req.query.search}%`;
         params = [searchTerm, searchTerm, searchTerm];
     
     } else {
         // Get all games
-        query = "SELECT * FROM g3a.Games"
+        query = "SELECT * FROM g3a.Games WHERE active = 1"
+
+        // Session for admins
+        if (session != undefined) {
+            let userID = await verifySession(session);
+            if (userID) {
+                let user = await getUserID(userID);
+                if (user && user.UserType == "admin") {
+                    query = "SELECT * FROM g3a.Games"
+                }
+            }
+        }
     }
 
-try {
+    try {
         const result = await pool.query(query, params);  // ✅ params is always defined
         res.json(result);
     } catch (err) {
         console.error("Database Query Error:", err);
-        res.status(500).json({ error: "Internal Server Error" });
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 });
 
 app.post("/game", async(req, res)=> {
     const {gameName, gameDesc, gameImg } = req.body;
-    let query;
-    query = `
-        SELECT * FROM g3a.Users
-        WHERE g3a.Users.Name = ?
-    `;
+    const session = req.query.session; 
 
     {/* Verify user session */}
     const userID = await verifySession(session)
@@ -79,7 +90,7 @@ app.post("/game", async(req, res)=> {
     }
 
     {/* Validate that a user is an admin */}
-    if(user.userType != "admin"){
+    if(user.UserType != "admin"){
         res.statusCode = 401;
         res.send("Unauthorized")
         return;
@@ -100,18 +111,19 @@ app.post("/game", async(req, res)=> {
 
     {/* Insert game and get game Id */}
     const { ID } = (await pool.query(insertQuery, [gameName,gameDesc,gameImg]))[0];
-    res.send("Game added sucesfully", {ID})
+    
+    res.send("Game added sucesfully")
+    return;
 });
 
-app.put("/game/", async(req, res)=> {
-    const {gameName, gameDesc, gameImg } = req.body;
+app.put("/game/:id", async(req, res)=> {
+    const {gameName, gameDesc, gameImg, active } = req.body;
     const gameId = req.params.id;
+    const session = req.query.session;
 
-    let query;
-    query = `
-    SELECT * FROM g3a.Games
-    WHERE g3a.Games.ID = ?
-    `
+    if (!gameName || !gameDesc || !gameImg || active == undefined || active == null) {
+        return res.status(500).send("Bad");
+    }
 
     {/* Verify user session */}
     const userID = await verifySession(session)
@@ -121,8 +133,13 @@ app.put("/game/", async(req, res)=> {
         return;
     }
 
+    const user = await getUserID(userID);
+    if (!user) {
+        return res.status(401).send("Unauthorized");
+    }
+
     {/* Validate that a user is an admin */}
-    if(user.userType != "admin"){
+    if(user.UserType != "admin"){
         res.statusCode = 401;
         res.send("Unauthorized")
         return;
@@ -143,11 +160,13 @@ app.put("/game/", async(req, res)=> {
     }
 
     const updateQuery = `
-        UPDATE g3a.Games (Name, Description, ImageURL)
-        SET Name = ?, Description = ?, ImageURL = ?
+        UPDATE g3a.Games
+        SET Name = ?, Description = ?, ImageURL = ?, active = ?
         WHERE ID = ?
     `;
-    (await pool.query(updateQuery, [gameName,gameDesc,gameImg]))[0];
+    (await pool.query(updateQuery, [gameName, gameDesc, gameImg, active, gameId]))[0];
+
+    return res.status(200).send("OK")
 })
 
 app.get('/game/:id', async (req, res) => {
@@ -538,6 +557,8 @@ app.post("/favorites", async (req, res) => {
         console.log(err);
     }
 })
+
+
 app.delete("/favorites", async (req, res) => {
     const { session, gameID } = req.body;
 
@@ -587,6 +608,7 @@ app.get("/account/keys", async (req, res) => {
     if (userID == null || userID == false) {
         res.statusCode = 401;
         res.send("Unauthorized");
+        return
     }
 
     try{
@@ -599,10 +621,82 @@ app.get("/account/keys", async (req, res) => {
                 WHERE g3a.Order.UserID = ? ))
         `
         const result = await pool.query(query, [userID]);
-        return res.send(result);
+        return res.send("OK");
     }catch(err){
         console.log(err);
         return
+    }
+})
+
+app.post("/keys", async (req, res) => {
+    const { GameID, KeyString } = req.body;
+    const session = req.query.session;
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+
+    if(user.UserType != "admin") {
+        return res.status(401).send("Unauthorized");
+    }
+    const query = `
+        INSERT INTO g3a.Keys (KeyString, GameID)
+        VALUES (?, ?);
+    `;
+    try {
+        const result = await pool.query(query, [KeyString, GameID]);
+        return res.send("OK");
+    } catch (err) {
+        console.log(err);
+    }
+})
+
+// Returns all keys for admin only
+app.get("/keys", async (req, res) => {
+    const { session } = req.query;
+
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+
+    if (user.UserType !== "admin") {
+        return res.status(401).send("Unauthorized");
+    }
+
+    try{
+        query= `
+            SELECT * FROM g3a.Keys ORDER BY g3a.Keys.GameID
+        `
+        const result = await pool.query(query);
+        return res.send(result);
+    } catch(err) {
+        console.log(err);
+        return res.status(500).send("Internal Server Error")
     }
 })
 
@@ -742,6 +836,32 @@ app.post("/reviews", async (req, res) => {
     }
 
 })
+
+// For checking if user is admin
+app.get("/admin", async (req, res) => {
+    const { session } = req.query;
+    
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    const user = await getUserID(userID)
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("No user found");
+        return;
+    }
+
+    if (user.UserType == "admin") {
+        return res.status(200).send("OK")
+    } else {
+        return res.status(401).send("Unauthorized")
+    }
+})
+
 // Retrieves a user or null if no user is found
 const getUser = async (name) => {
     const query = `   

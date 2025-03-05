@@ -18,8 +18,7 @@ function gameCard(name: string, description: string, image_url: string, id: stri
 }
 
 type IProps = {
-  object?: object,
-  id?: string
+  search?: string,
 }
 
 interface Game {
