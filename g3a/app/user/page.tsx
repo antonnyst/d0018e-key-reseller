@@ -2,6 +2,7 @@ import { cookies } from 'next/headers'
 import LoginPage from './login';
 import { UserPage } from './user';
 import { AccountPage } from './account';
+import { BasketPage } from "./basket"
 
 export default async function ProfilePage() {
         
@@ -17,8 +18,11 @@ export default async function ProfilePage() {
       return <LoginPage/>;
     }
   
-    return <div className="min-h-screen bg-gray-100 py-8">
-      <UserPage session={sessionToken.value}></UserPage>
-      <AccountPage session={sessionToken.value}></AccountPage>
-    </div>
+    return (
+        <div className="min-h-screen bg-gray-100 py-8">
+            <UserPage session={sessionToken.value}/>
+            <AccountPage session={sessionToken.value}/>
+            <BasketPage session={sessionToken.value}/>
+        </div>
+    )
   }

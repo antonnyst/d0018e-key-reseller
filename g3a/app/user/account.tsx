@@ -71,7 +71,7 @@ const ChangePasswordPage: React.FC<SessionProps> = (props) => {
 
 export const AccountPage: React.FC<SessionProps> = (props) => {
     return (
-        <div className='max-w-2xl mt-6 mx-auto bg-white p-6 rounded-lg shadow-md'>
+        <div className='max-w-2xl mt-6 mx-auto bg-white p-6 rounded-lg shadow-md py-6 pb-6 my-6'>
             <h1 className="text-2xl font-bold mb-6 text-gray-800">Account</h1>
             <ChangePasswordPage session={props.session}></ChangePasswordPage>
             <LogoutButton className='p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700'></LogoutButton>

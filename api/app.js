@@ -619,7 +619,7 @@ app.get("/account/keys", async (req, res) => {
                 WHERE g3a.Order.UserID = ? ))
         `
         const result = await pool.query(query, [userID]);
-        return res.send("OK");
+        return res.send(result);
     }catch(err){
         console.log(err);
         return
@@ -709,21 +709,22 @@ app.get("/basket", async (req, res) => {
     }
 
     {/* Get userID */}
-    const userID = await verifySession(session)
-    if (userID == null || userID == false) {
+    const UserID = await verifySession(session)
+    if (UserID == null || UserID == false) {
         res.statusCode = 401;
         res.send("Unauthorized");
+        return;
     }
     try {
         query= `
-        SELECT g3a.Keys.GameID, g3a.Keys.KeyString FROM g3a.Keys
+        SELECT g3a.Keys.GameID FROM g3a.Keys
         WHERE g3a.Keys.ID IN (
             SELECT g3a.Basket.KeyID FROM g3a.Basket
             WHERE g3a.Basket.UserID = ?
             )
         `
-        const result = await pool.query(query, [userID]);
-        return res.send(result);
+        const result = await pool.query(query, [UserID]);
+        return res.send(result.map((basket) => basket.GameID));
     }catch(err){
         console.log(err);
     }

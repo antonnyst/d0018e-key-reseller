@@ -216,6 +216,11 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
+  INSERT INTO g3a.Basket (KeyID, UserID) VALUES \
+  (\"30002\", \"1000\")
+"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \
     (1008, 50000), \
     (1000, 50001), \
