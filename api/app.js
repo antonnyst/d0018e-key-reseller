@@ -642,6 +642,9 @@ app.post("/sale", async (req, res) => {
         res.send("Unauthorized");
         return
     }
+    const securityquery = `
+    SELECT * FROM g3a.Basket WHERE UserID = ?;
+    `
 
     const firstquery= `
     INSERT INTO g3a.Order (UserId, Sum)
@@ -652,13 +655,16 @@ app.post("/sale", async (req, res) => {
     const secoundquery= `
     INSERT INTO g3a.OrderKeys (OrderID, KeyID) 
     SELECT ?, g3a.Basket.KeyID FROM g3a.Basket WHERE g3a.Basket.UserID = ?
-    
     `
 
     const thirdquery= `
     DELETE FROM g3a.Basket WHERE UserID = ?`
 
     try{
+        const security = await pool.query(securityquery, [UserID])
+        if(security.length === 0){
+            return res.send("No game in basket!")
+        }
         const result = await pool.query(firstquery, [UserID, "10"]);
         console.log(result);
         const result2 = await pool.query(secoundquery, [result[0].ID, UserID]);
