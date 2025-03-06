@@ -17,6 +17,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         Description TEXT, \
         ImageURL VARCHAR(255), \
         active BOOLEAN NOT NULL DEFAULT TRUE, \
+        Price DOUBLE NOT NULL, \
         PRIMARY KEY (ID) \
     );\
 "
@@ -77,17 +78,6 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 echo "game tags table created"
 
-mariadb --socket=/var/lib/maria/maria.sock -e "\
-    CREATE TABLE g3a.Prices ( \
-        ID INT NOT NULL AUTO_INCREMENT, \
-        Price VARCHAR(50) NOT NULL, \
-        GameID INT NOT NULL, \
-        active BOOLEAN NOT NULL DEFAULT TRUE, \
-        PRIMARY KEY (ID), \
-        FOREIGN KEY (GameID) REFERENCES g3a.Games(ID) ON DELETE CASCADE \
-    );\
-"
-echo "prices table created"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Keys ( \
@@ -118,6 +108,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.OrderKeys ( \
         OrderID INT NOT NULL, \
         KeyID INT NOT NULL, \
+        Price DOUBLE NOT NULL, \
         PRIMARY KEY (OrderID, KeyID), \
         FOREIGN KEY (OrderID) REFERENCES g3a.Order(ID) ON DELETE CASCADE, \
         FOREIGN KEY (KeyID) REFERENCES g3a.Keys(ID) ON DELETE CASCADE\
@@ -130,6 +121,7 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
         KeyID INT NOT NULL, \
         UserID INT NOT NULL, \
+        Price DOUBLE NOT NULL, \
         PRIMARY KEY (KeyID, UserID), \
         FOREIGN KEY (KeyID) REFERENCES g3a.Keys(ID) ON DELETE CASCADE, \
         FOREIGN KEY (UserID) REFERENCES g3a.Users(ID) ON DELETE CASCADE \
@@ -160,20 +152,18 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
 "
 echo "sessions table created"
 
-
-
 # Lägg in default data
 mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.Games (Name, Description, ImageURL) VALUES \
-    (\"Gruvkraft - Kiruna Edition\", \"A mining simulation game set in Kiruna\", \"GRUVKRAFT.jpg\"), \
-    (\"EEE\", \"Do NOT stack the blocks...\", \"eee.png\"), \
-    (\"EEE2\", \"Do NOT NOT stack the blocks...\", \"eee.png\"), \
-    (\"EEE3\", \"Do NOT NOT NOT stack the blocks...\", \"eee.png\"), \
-    (\"EEE4\", \"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\"),  \
-    (\"EEE5\", \"...stack the blocks...\", \"eee.png\"),  \
-    (\"EEE6\", \"...the blocks...\", \"eee.png\"),  \
-    (\"EEE7\", \"...blocks...\", \"eee.png\"),  \
-    (\"Elden Loop: Timeless Trials in the Realm of Echoes\", \"Step into the captivating world of Elden Loop, a realm where time flows uniquely, offering endless opportunities for strategic play. The setting features a diverse array of biomes and environments, each with its own time-based nuances, creating a dynamic exploration experience.\", \"eldenloop.png\")  \
+    INSERT INTO g3a.Games (Name, Price, Description, ImageURL) VALUES \
+    (\"Gruvkraft - Kiruna Edition\", 10,\"A mining simulation game set in Kiruna\", \"GRUVKRAFT.jpg\"), \
+    (\"EEE\", 10,\"Do NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE2\", 10,\"Do NOT NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE3\", 10,\"Do NOT NOT NOT stack the blocks...\", \"eee.png\"), \
+    (\"EEE4\", 10,\"Do NOT NOT NOT NOT stack the blocks...\", \"eee.png\"),  \
+    (\"EEE5\", 10,\"...stack the blocks...\", \"eee.png\"),  \
+    (\"EEE6\", 10,\"...the blocks...\", \"eee.png\"),  \
+    (\"EEE7\", 10,\"...blocks...\", \"eee.png\"),  \
+    (\"Elden Loop: Timeless Trials in the Realm of Echoes\", 10, \"Step into the captivating world of Elden Loop, a realm where time flows uniquely, offering endless opportunities for strategic play. The setting features a diverse array of biomes and environments, each with its own time-based nuances, creating a dynamic exploration experience.\", \"eldenloop.png\")  \
 "
 echo "games data inserted"
 
@@ -187,18 +177,19 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Keys (KeyString, GameID ) VALUES \
     (\"asjfnajsf\",  \"1000\"), \
     (\"idididid\",  \"1000\"), \
-    (\"209420jfj202\",  \"1008\")
+    (\"209420jfj202\",  \"1008\"), \
+    (\"EEEEEEEEEEEEEEE\",  \"1004\") 
 "
-mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.Order (UserID, Sum ) VALUES \
-    (\"1000\",  \"5000\")
-    "
-mariadb --socket=/var/lib/maria/maria.sock -e "\
-    INSERT INTO g3a.OrderKeys (OrderID, KeyID ) VALUES \
-    (\"1000\",  \"30000\"),\
-    (\"1000\",  \"30001\"), \
-    (\"1000\",  \"30002\")
-    "
+#mariadb --socket=/var/lib/maria/maria.sock -e "\
+#    INSERT INTO g3a.Order (UserID, Sum ) VALUES \
+#    (\"1000\",  \"5000\")
+#    "
+#mariadb --socket=/var/lib/maria/maria.sock -e "\
+#    INSERT INTO g3a.OrderKeys (OrderID, KeyID ) VALUES \
+#    (\"1000\",  \"30000\"),\
+#    (\"1000\",  \"30001\"), \
+#    (\"1000\",  \"30002\")
+#    "
 
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
@@ -215,10 +206,10 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
   (\"2\", \"1000\", \"1000\", \"0\", \"I THINK GAME NOT GOOD LIKE MINECRAFT MOVIE\")
 "
 
-mariadb --socket=/var/lib/maria/maria.sock -e "\
-  INSERT INTO g3a.Basket (KeyID, UserID) VALUES \
-  (\"30002\", \"1000\")
-"
+#mariadb --socket=/var/lib/maria/maria.sock -e "\
+#  INSERT INTO g3a.Basket (KeyID, UserID) VALUES \
+#  (\"30002\", \"1000\")
+#"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \

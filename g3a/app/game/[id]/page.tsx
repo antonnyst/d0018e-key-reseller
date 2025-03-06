@@ -28,6 +28,7 @@ interface Game {
     Description: string,
     active: boolean,
     ImageURL: string,
+    Price: string,
 }
 
 interface Review {
@@ -140,7 +141,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                         <h1 className="text-5xl text-center mb-10">{this.state.game.Name}</h1>
 
                         <div className="w-full flex">
-                            <p className="flex-1">pris 100 dollar</p>
+                            <p className="flex-1">pris {this.state?.game?.Price} dollar</p>
                             <p className="flex-1">only {this.state.stock} keys left</p>
                             <button onClick={()=>handleAddToBasket(this.state?.game?.ID)} className="bg-green-400 rounded-lg p-2">add to basket</button>
                         </div>

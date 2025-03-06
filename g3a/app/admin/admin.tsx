@@ -40,6 +40,7 @@ type Game = {
     Description: string,
     ImageURL: string,
     active: boolean,
+    Price: string
 }
 
 interface IState {
@@ -56,6 +57,7 @@ async function modifyGame(formData: FormData) {
     const GameID = formData.get("GameID");
     const active = formData.get("active");
     const session = formData.get("session");
+    const Price = formData.get("Price");
     fetch("/api/game/"+GameID+"?session="+session, {
             method: "PUT",
             headers: {
@@ -66,6 +68,7 @@ async function modifyGame(formData: FormData) {
                 "gameDesc": Description,
                 "gameImg": ImageURL,
                 "active": active == "on" ? true : false,
+                "Price": Price,
             })
         }
     ).then(()=>{
@@ -264,7 +267,8 @@ export class AdminPage extends React.Component<IProps, IState> {
                 <div className="space-y-4">
                     <div className="text-gray-700 flex flex-row w-full">
                         <h1 className="ml-4 my-auto">Game ID</h1>
-                        <h1 className="ml-4 my-auto">Game ID</h1>
+                        <h1 className="ml-4 my-auto">Game Name</h1>
+                        <h1 className="ml-4 my-auto">Price</h1>
                         <p className="flex-1 ml-4 my-auto text-right">Active</p>
                     </div>
                     {games.length > 0 ? (
@@ -276,6 +280,7 @@ export class AdminPage extends React.Component<IProps, IState> {
                             >
                                 <h1 className="ml-4 my-auto">{game.ID}</h1>
                                 <h1 className="ml-4 my-auto">{game.Name}</h1>
+                                <h1 className="ml-4 my-auto">{game.Price}</h1>
                                 <p className="flex-1 ml-4 my-auto text-right">{game.active ? "Active" : "Inactive"}</p>
                             </button>
                             <div id={"game"+index} className="hidden mx-4 p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700">
@@ -294,6 +299,10 @@ export class AdminPage extends React.Component<IProps, IState> {
                                     <div>
                                         <h1>ImageURL</h1>
                                         <input name="ImageURL" defaultValue={game.ImageURL}></input>
+                                    </div>
+                                    <div>
+                                        <h1>Price</h1>
+                                        <input name="Price" defaultValue={game.Price}></input>
                                     </div>
                                     <div>
                                         <h1>Active</h1>
@@ -326,6 +335,10 @@ export class AdminPage extends React.Component<IProps, IState> {
                         <div>
                             <h1>ImageURL</h1>
                             <input name="ImageURL" defaultValue={"💀"}></input>
+                        </div>
+                        <div>
+                            <h1>Price</h1>
+                            <input name="Price" defaultValue={"10"}></input>
                         </div>
                         <div>
                             <button type="submit" className="bg-white border">Add game!</button>

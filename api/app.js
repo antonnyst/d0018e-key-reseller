@@ -70,7 +70,7 @@ app.get('/game', async (req, res) => {
 });
 
 app.post("/game", async(req, res)=> {
-    const {gameName, gameDesc, gameImg } = req.body;
+    const {gameName, gameDesc, gameImg, Price } = req.body;
     const session = req.query.session;
 
     {/* Verify user session */}
@@ -97,31 +97,30 @@ app.post("/game", async(req, res)=> {
     }
 
     {/* An admin needs to atleast enter a gamename */}
-    if (!gameName) {
+    if (gameName == undefined || Price === undefined) {
         res.statusCode = 400;
         res.send("The game needs a name");
         return;
     }
 
     const insertQuery = `
-        INSERT INTO g3a.Games (Name, Description, ImageURL)
-        VALUES (?, ?, ?)
-        RETURNING ID;
+        INSERT INTO g3a.Games (Name, Description, ImageURL, Price)
+        VALUES (?, ?, ?, ?)
     `;
 
     {/* Insert game and get game Id */}
-    const { ID } = (await pool.query(insertQuery, [gameName,gameDesc,gameImg]))[0];
+    await pool.query(insertQuery, [gameName,gameDesc,gameImg,Price]);
 
     res.send("Game added sucesfully")
     return;
 });
 
 app.put("/game/:id", async(req, res)=> {
-    const {gameName, gameDesc, gameImg, active } = req.body;
+    const {gameName, gameDesc, gameImg, Price , active } = req.body;
     const gameId = req.params.id;
     const session = req.query.session;
 
-    if (!gameName || !gameDesc || !gameImg || active == undefined || active == null) {
+    if (!gameName || !gameDesc || !gameImg || active == undefined || active == null || Price == null) {
         return res.status(500).send("Bad");
     }
 
@@ -151,20 +150,13 @@ app.put("/game/:id", async(req, res)=> {
         res.send("Invalid GameID");
         return;
     }
-    
-    {/* Makes sure an admin alters atleast one element */}
-    if (!gameName && !gameDesc && !gameImg) {
-        res.statusCode = 400;
-        res.send("Choose atleast one element to change!");
-        return;
-    }
 
     const updateQuery = `
         UPDATE g3a.Games
-        SET Name = ?, Description = ?, ImageURL = ?, active = ?
+        SET Name = ?, Description = ?, ImageURL = ?, active = ?, Price = ?
         WHERE ID = ?
     `;
-    (await pool.query(updateQuery, [gameName, gameDesc, gameImg, active, gameId]))[0];
+    (await pool.query(updateQuery, [gameName, gameDesc, gameImg, active, Price, gameId]))[0];
 
     return res.status(200).send("OK")
 })
@@ -646,6 +638,12 @@ app.post("/sale", async (req, res) => {
     SELECT * FROM g3a.Basket WHERE UserID = ?;
     `
 
+    const sumquery = `
+        SELECT SUM(g3a.Basket.Price) AS Total 
+        FROM g3a.Basket 
+        WHERE g3a.Basket.UserID = ?
+    `
+
     const firstquery= `
     INSERT INTO g3a.Order (UserId, Sum)
     VALUES (?, ?)
@@ -653,8 +651,8 @@ app.post("/sale", async (req, res) => {
     `
 
     const secoundquery= `
-    INSERT INTO g3a.OrderKeys (OrderID, KeyID) 
-    SELECT ?, g3a.Basket.KeyID FROM g3a.Basket WHERE g3a.Basket.UserID = ?
+    INSERT INTO g3a.OrderKeys (OrderID, KeyID, Price) 
+    SELECT ?, g3a.Basket.KeyID, g3a.Basket.Price FROM g3a.Basket WHERE g3a.Basket.UserID = ?
     `
 
     const thirdquery= `
@@ -665,7 +663,10 @@ app.post("/sale", async (req, res) => {
         if(security.length === 0){
             return res.send("No game in basket!")
         }
-        const result = await pool.query(firstquery, [UserID, "10"]);
+
+        const sum = await pool.query(sumquery, [UserID]);
+
+        const result = await pool.query(firstquery, [UserID, sum[0].Total]);
         console.log(result);
         const result2 = await pool.query(secoundquery, [result[0].ID, UserID]);
         const result3 = await pool.query(thirdquery, [UserID]);
@@ -676,7 +677,7 @@ app.post("/sale", async (req, res) => {
 })
 
 app.post("/keys", async (req, res) => {
-    const { GameID, KeyString } = req.body;
+    const { GameID, KeyString} = req.body;
     const session = req.query.session;
 
     const userID = await verifySession(session)
@@ -797,10 +798,10 @@ app.post("/basket", async (req, res) => {
 
     try{
         query = `
-            INSERT INTO g3a.Basket (UserID, KeyID)
-            VALUES (?, ?);
+            INSERT INTO g3a.Basket (UserID, KeyID, Price)
+            VALUES (?, ?, (SELECT g3a.Games.Price FROM g3a.Games WHERE g3a.Games.ID = ?))
         `
-        const result = await pool.query(query, [userID, KeyIDs[0].ID]);
+        const result = await pool.query(query, [userID, KeyIDs[0].ID, GameID]);
         return res.send(result);
     }catch(err){
         console.log(err);
