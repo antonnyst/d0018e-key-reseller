@@ -625,6 +625,49 @@ app.get("/account/keys", async (req, res) => {
         return
     }
 })
+app.post("/sale", async (req, res) => {
+    const session = req.body.session;
+
+    {/* Verify session */}
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    {/* Get userID */}
+    const UserID = await verifySession(session)
+    if (UserID == null || UserID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return
+    }
+
+    const firstquery= `
+    INSERT INTO g3a.Order (UserId, Sum)
+    VALUES (?, ?)
+    RETURNING g3a.Order.ID 
+    `
+
+    const secoundquery= `
+    INSERT INTO g3a.OrderKeys (OrderID, KeyID) 
+    SELECT ?, g3a.Basket.KeyID FROM g3a.Basket WHERE g3a.Basket.UserID = ?
+    
+    `
+
+    const thirdquery= `
+    DELETE FROM g3a.Basket WHERE UserID = ?`
+
+    try{
+        const result = await pool.query(firstquery, [UserID, "10"]);
+        console.log(result);
+        const result2 = await pool.query(secoundquery, [result[0].ID, UserID]);
+        const result3 = await pool.query(thirdquery, [UserID]);
+        return res.send("This is ok!");
+    }catch(err){
+        console.log(err);
+    }
+})
 
 app.post("/keys", async (req, res) => {
     const { GameID, KeyString } = req.body;
@@ -748,7 +791,39 @@ app.post("/basket", async (req, res) => {
         console.log(err);
     }
 })
+app.delete("/basket", async (req, res) => {
+    const { GameID } = req.body;
+    const session = req.body.session;
 
+    {/* Verify session */}
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    const UserID = await verifySession(session)
+    if (UserID == null || UserID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+
+    try {
+        query = `
+        DELETE FROM g3a.Basket
+        WHERE UserID = ? AND KeyID IN (
+            SELECT ID FROM g3a.Keys
+            WHERE g3a.Keys.GameID = ?
+            )
+        `
+        const result = await pool.query(query, [UserID, GameID]);
+        return res.send(result);
+    } catch (err) {
+        console.log(err);
+        res.send("Could not delete from basket")
+    }
+})
 // Gets all orders and information
 // admin only
 app.get("/orders", async (req, res) => {
