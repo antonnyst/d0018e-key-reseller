@@ -57,6 +57,29 @@ async function postReview(formdata: FormData, GameID: string | undefined) {
     } catch (err) {
         console.log(err);
     }
+    document.location.reload()
+}
+
+async function handleAddToBasket(GameID: string | undefined) {
+    const session = getCookie("g3a-session");
+    if (GameID==undefined) {
+        return;
+    }
+    try {
+        const response = await fetch("/api/basket", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({session, GameID}),
+        })
+        if (response) {
+            console.log(response);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+    document.location.reload()
 }
 
 
@@ -119,7 +142,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                         <div className="w-full flex">
                             <p className="flex-1">pris 100 dollar</p>
                             <p className="flex-1">only {this.state.stock} keys left</p>
-                            <button className="bg-green-400 rounded-lg p-2">add to basket</button>
+                            <button onClick={()=>handleAddToBasket(this.state?.game?.ID)} className="bg-green-400 rounded-lg p-2">add to basket</button>
                         </div>
 
                         <div className="flex-1 flex">

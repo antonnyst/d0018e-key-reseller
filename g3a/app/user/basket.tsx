@@ -32,6 +32,7 @@ async function handlePurchase() {
     }catch(err){
         console.log(err)
     }
+    document.location.reload()
 }
 async function removeFromBasket(GameID:string): Promise<void> {
     const session = getCookie("g3a-session");
@@ -50,6 +51,7 @@ async function removeFromBasket(GameID:string): Promise<void> {
     }catch(err){
         console.log(err)
     }
+    document.location.reload()
 }
 
 export class BasketPage extends React.Component<IProps, IState> {

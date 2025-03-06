@@ -773,19 +773,28 @@ app.get("/basket", async (req, res) => {
     }
 })
 app.post("/basket", async (req, res) => {
-    const { session, keyID } = req.body;
+    const { session, GameID } = req.body;
+
     const userID = await verifySession(session)
+    const KeyIDs = await getStock(GameID)
+
+    if(KeyIDs.length === 0) {
+        res.statusCode = 402;
+        res.send("No KeyID left to buy");
+        return;
+    }
     if (userID == null || userID == false) {
         res.statusCode = 401;
         res.send("Unauthorized");
         return;
     }
+
     try{
         query = `
-            INSERT INTO g3a.Basket (userID, keyID)
+            INSERT INTO g3a.Basket (UserID, KeyID)
             VALUES (?, ?);
         `
-        const result = await pool.query(query, [userID, keyID]);
+        const result = await pool.query(query, [userID, KeyIDs[0].ID]);
         return res.send(result);
     }catch(err){
         console.log(err);
