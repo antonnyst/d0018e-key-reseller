@@ -1022,3 +1022,40 @@ const getGameID = async (gameID) => {
     
     return null;
 };
+
+// Get amount of keys in stock
+app.get("/game/:id/stock", async (req, res) => {
+    const GameID = req.params.id;
+
+    const stock = await getStock(GameID);
+
+    if (stock == null) {
+        return res.status(500).send("Internal Server Error");
+    }
+
+    return res.status(200).send(stock.length.toString());
+})
+
+// Returns array of keyIDs which are availible for an game
+const getStock = async (GameID) => {
+    const query = `
+        SELECT g3a.Keys.ID 
+        FROM g3a.Keys
+        WHERE 
+            g3a.Keys.GameID = ?
+            AND
+            g3a.Keys.ID NOT IN (
+                (SELECT g3a.OrderKeys.KeyID FROM g3a.OrderKeys)
+                UNION
+                (SELECT g3a.Basket.KeyID FROM g3a.Basket)
+            )    
+    `
+
+    try {
+        const result = await pool.query(query, [GameID]);
+        return result;
+    } catch(err) {
+        console.log(err)
+        return null;
+    }
+}

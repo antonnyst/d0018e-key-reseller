@@ -15,6 +15,7 @@ type GamePageState = {
     game?: Game
     tags?: GameTag[]
     review?: Review[]
+    stock?: string
 }
 
 type GameTag = {
@@ -71,6 +72,16 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             })
             .catch(err => console.log(err));
 
+        fetch("/api/game/" + this.props.id + "/stock")
+            .then(response => {
+                return response.json()
+            })
+            .then(json => {
+                console.log(json);
+                this.setState({stock: json})
+            })
+            .catch(err => console.log(err));
+
         fetch("/api/gametags?id=" + this.props.id)
             .then(response => response.json())
             .then((json: GameTag[]) => {
@@ -107,7 +118,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
 
                         <div className="w-full flex">
                             <p className="flex-1">pris 100 dollar</p>
-                            <p className="flex-1">only 45 keys left</p>
+                            <p className="flex-1">only {this.state.stock} keys left</p>
                             <button className="bg-green-400 rounded-lg p-2">add to basket</button>
                         </div>
 
