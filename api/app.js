@@ -617,6 +617,87 @@ app.get("/account/keys", async (req, res) => {
         return
     }
 })
+
+app.get("/account/orders", async (req, res) => {
+    const { session } = req.query;
+
+    {/* Verify session */}
+    if (session == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    {/* Get userID */}
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return
+    }
+
+    try{
+        query= `
+            SELECT * FROM g3a.Order
+            WHERE g3a.Order.UserID = ?
+        `
+        const result = await pool.query(query, [userID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
+        return
+    }
+})
+
+app.get("/orderkeys", async (req, res) => {
+    const { session, orderID } = req.query;
+
+    if (session == undefined || orderID == undefined ) {
+        res.statusCode = 401;
+        res.send("Can't define session");
+        return;
+    }
+
+    const userID = await verifySession(session)
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return
+    }
+
+    try{
+        let securityquery = `
+            SELECT * FROM g3a.Order
+            WHERE g3a.Order.ID = ? AND g3a.Order.UserID = ?
+        `
+
+        const sec = await pool.query(securityquery, [orderID, userID]);
+
+        if (sec.length == 0) {
+            return res.code(401).send("Unauthorized");
+        }
+
+        let query= `
+            SELECT g3a.Keys.KeyString, g3a.Games.Name, g3a.Games.ImageURL, g3a.Games.ID as GameID
+            FROM g3a.Keys   
+            INNER JOIN g3a.Games ON g3a.Keys.GameID = g3a.Games.ID AND g3a.Keys.ID IN (
+                SELECT g3a.OrderKeys.KeyID 
+                FROM g3a.OrderKeys WHERE g3a.OrderKeys.OrderID = ?
+            )
+        `
+        /*SELECT * FROM g3a.Keys
+            WHERE g3a.Keys.ID IN (
+                SELECT g3a.OrderKeys.KeyID 
+                FROM g3a.OrderKeys WHERE g3a.OrderKeys.OrderID = ?
+            )*/
+        const result = await pool.query(query, [orderID]);
+        return res.send(result);
+    }catch(err){
+        console.log(err);
+        return
+    }
+})
+
 app.post("/sale", async (req, res) => {
     const session = req.body.session;
 

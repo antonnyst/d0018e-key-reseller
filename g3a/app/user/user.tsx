@@ -23,6 +23,13 @@ type Key = {
     GameID: string,
 }
 
+type Order = {
+    Timestamp: string,
+    Sum: string,
+    ID: string,
+    keys: Key[] | undefined
+}
+
 type Game = {
     Name: string,
     ID: string,
@@ -33,7 +40,8 @@ type Game = {
 
 interface IState {
     favorites?: Favorite[],
-    keys?: Key[]
+    keys?: Key[],
+    orders?: Order[],
 }
 
 export class UserPage extends React.Component<IProps, IState> {
@@ -56,6 +64,32 @@ export class UserPage extends React.Component<IProps, IState> {
             })
             .catch(err => console.log(err));
 
+        
+        fetch("/api/account/orders?session="+this.props.session)
+            .then(response => {return response.json()})
+            .then((json: Order[]) => {
+                json.forEach((order: Order) => {
+                    fetch("/api/orderkeys?session="+this.props.session+"&orderID="+order.ID)
+                        .then(response => response.json())
+                        .then((json: Key[]) => {
+                            let orders = this.state?.orders;
+                            if (orders == undefined) {
+                                orders = [];
+                            }
+                            orders.push({
+                                keys: json,
+                                Timestamp: order.Timestamp,
+                                Sum: order.Sum,
+                                ID: order.ID,
+                            })
+                            this.setState({"orders": orders});
+                        })
+                });
+            })
+            .catch(err => console.log(err))
+
+
+        
         fetch("/api/account/keys?session="+this.props.session)
             .then(response => {console.log(response); return response.json()})
             .then((json: MinimalKey[]) => {
@@ -101,16 +135,16 @@ export class UserPage extends React.Component<IProps, IState> {
                 GameID: "1001"
             }
         ];*/
-        const games: Key[] = this.state?.keys ? this.state.keys : [];
+        //const games: Key[] = this.state?.keys ? this.state.keys : [];
         const favorites: Favorite[] = this.state?.favorites ? this.state.favorites : [];
+        const orders: Order[] = this.state?.orders ? this.state.orders : [];
 
         return (
             <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
                 <h1>{"Logged in with token: " + session}</h1>
                 
+                {/* List of keys
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">My Keys</h1>
-
-                {/* List of owned games */}
                 <div className="space-y-4">
                     {games.length > 0 ? (
                     games.map((game: Key, index) => (
@@ -124,6 +158,44 @@ export class UserPage extends React.Component<IProps, IState> {
                             <p className="flex-1 ml-4 my-auto text-right">{game.KeyString}</p>
                         </button>
                     ))
+                    ) : (
+                    <p className="text-gray-500 text-center">No games added yet.</p>
+                    )}
+                </div>
+                */}
+
+                {/* Orders */}
+                <h1 className="text-2xl font-bold mb-6 text-gray-800">My Orders</h1>
+
+                <div className="space-y-4">
+                    <div className="text-gray-700 flex flex-row w-full">
+                        <h1 className="ml-4 my-auto">Order ID</h1>
+                        <h1 className="ml-4 my-auto">Sum</h1>
+                        <p className="flex-1 ml-4 my-auto text-right">Timestamp</p>
+                    </div>
+                    {orders.length > 0 ? (
+                    orders.map((order: Order, index) => (
+                        <div key={index} className="space-y-4">
+                            <button
+                                className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex flex-row w-full"
+                                onClick={() => {document.getElementById("order"+index)?.classList.toggle("hidden")}}
+                            >
+                                <h1 className="ml-4 my-auto">{order.ID}</h1>
+                                <h1 className="ml-4 my-auto">{order.Sum} dollar</h1>
+                                <p className="flex-1 ml-4 my-auto text-right">{order.Timestamp}</p>
+                            </button>
+                            <div id={"order"+index} className="hidden mx-4 text-gray-700 space-y-4">
+                                {order.keys?.map((key: Key, index) => (
+                                    <div key={index} className="bg-gray-50 rounded-lg shadow-sm p-4 flex flex-row w-full">
+                                        <img className="aspect-square h-10" src={key.ImageURL}></img>
+                                        <h1 className="ml-4 my-auto">{key.Name}</h1>
+                                        <p className="flex-1 ml-4 my-auto text-right">{key.KeyString}</p>
+                                    </div>
+                                ))} 
+                            </div>
+                        </div>
+                        )
+                    )
                     ) : (
                     <p className="text-gray-500 text-center">No games added yet.</p>
                     )}
