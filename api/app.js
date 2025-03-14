@@ -1027,27 +1027,67 @@ app.get("/reviews", async (req, res) => {
     res.send(result);
 })
 app.post("/reviews", async (req, res) => {
-    const { description, positive, session, gameID } = req.body;
+    const { description, positive, session, GameID } = req.body;
 
     {/* Verify user session */}
-    const userID = await verifySession(session)
-    if (userID == null || userID == false) {
+    const UserID = await verifySession(session)
+    if (UserID == null || UserID == false) {
         res.statusCode = 401;
         res.send("Unauthorized");
         return;
     }
-    const user = await getUserID(userID)
+    const user = await getUserID(UserID)
     if (user == null) {
         res.statusCode = 401;
         res.send("No user found");
         return;
     }
+    try{
+        {/* Verifies that a user can only leave one review per game */}
+        verifycomment = `
+        SELECT * FROM g3a.Reviews
+        WHERE UserID = ? AND GameID = ?`
+
+        const verifyresponse = await pool.query(verifycomment, [GameID, UserID]);
+        console.log(verifyresponse)
+        if (verifyresponse.length>0){
+            console.log(verifyresponse);
+            res.statusCode = 403;
+            res.send("Action only allowed once");
+            return;
+        } else {
+            {/* Verifies that a user has bought the item they're trying to review */}
+            try {
+                verifypurchase = `
+                    SELECT g3a.Keys.GameID, g3a.Keys.KeyString
+                    FROM g3a.Keys WHERE g3a.Keys.ID IN (
+                        SELECT g3a.OrderKeys.KeyID FROM g3a.OrderKeys
+                        WHERE g3a.OrderKeys.OrderID IN (
+                            SELECT g3a.Order.ID FROM g3a.Order
+                            WHERE g3a.Order.UserID = ? )) AND g3a.Keys.GameID = ?
+                `
+
+                const tryVerifypurchase = await pool.query(verifypurchase, [UserID, GameID]);
+
+                if(tryVerifypurchase.length===0){
+                    res.statusCode = 403;
+                    res.send("Action not permitted without purchase");
+                    return;
+                }
+            }catch(err){
+                console.log(err);
+            }
+        }
+    }catch(err){
+        console.log(err);
+    }
+
     const query = `
-        INSERT INTO g3a.Reviews (userID, gameID, Description, Positive)
+        INSERT INTO g3a.Reviews (UserID, GameID, Description, Positive)
         VALUES (?,?,?,?)
     `
     try{
-        const result = await pool.query(query, [userID, gameID, description, positive]);
+        const result = await pool.query(query, [UserID, GameID, description, positive]);
         if(result){
             return res.send("ok")
         }

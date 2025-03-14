@@ -52,7 +52,7 @@ async function postReview(formdata: FormData, GameID: string | undefined, Opinio
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({description: description, positive: positive, gameID: gameID, session: cookie}),
+            body: JSON.stringify({description: description, positive: positive, GameID: gameID, session: cookie}),
         })
         if (response) {
             console.log(response);
