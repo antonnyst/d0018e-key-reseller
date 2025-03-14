@@ -1026,7 +1026,6 @@ app.get("/reviews", async (req, res) => {
     }
     res.send(result);
 })
-
 app.post("/reviews", async (req, res) => {
     const { description, positive, session, gameID } = req.body;
 
@@ -1058,6 +1057,62 @@ app.post("/reviews", async (req, res) => {
 
 })
 
+app.get("/comments", async (req, res) => {
+    let query;
+    if(req.query.ReviewID){
+        query = `
+            SELECT * FROM g3a.Comments
+            WHERE g3a.Comments.ReviewID = ?
+        `
+    }
+    try{
+        result = await pool.query(query, [req.query.ReviewID]);
+    }catch(err){
+        console.log(err);
+    }
+    res.send(result);
+})
+app.post("/comments", async (req, res) => {
+    const { description, session, reviewID} = req.body;
+
+    {/* Verify session */}
+    if (session == undefined) {
+        res.statusCode = 401;
+        res.send("No session provided");
+        return;
+    }
+
+    {/* Verify that a user is an admin */}
+    const userID = await verifySession(session);
+    if (userID == null || userID == false) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const user = await getUserID(userID);
+    if (user == null) {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    if (user.UserType !== "admin") {
+        res.statusCode = 401;
+        res.send("Unauthorized");
+        return;
+    }
+    const query = `
+    INSERT INTO g3a.Comments (reviewID, userID, description)
+    VALUES (?,?,?)
+    `
+    try{
+        const result = await pool.query(query, [reviewID, userID, description]);
+        if(result){
+            return res.send("ok")
+        }
+    }catch(err){
+        console.log(err);
+    }
+})
 // For checking if user is admin
 app.get("/admin", async (req, res) => {
     const { session } = req.query;
