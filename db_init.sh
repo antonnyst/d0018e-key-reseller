@@ -58,6 +58,20 @@ echo "Reviews table created"
 mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Reviews AUTO_INCREMENT=1;"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
+    CREATE TABLE g3a.Comments ( \
+        ID INT NOT NULL AUTO_INCREMENT, \
+        ReviewID INT NOT NULL, \
+        UserID INT NOT NULL, \
+        Description TEXT NOT NULL, \
+        PRIMARY KEY (ID), \
+        FOREIGN KEY (UserID) REFERENCES g3a.Users(ID) ON DELETE CASCADE, \
+        FOREIGN KEY (ReviewID) REFERENCES g3a.Reviews(ID) ON DELETE CASCADE \
+    );\
+"
+echo "comments table created"
+mariadb --socket=/var/lib/maria/maria.sock -e "ALTER TABLE g3a.Comments AUTO_INCREMENT=1;"
+
+mariadb --socket=/var/lib/maria/maria.sock -e "\
     CREATE TABLE g3a.Tags ( \
         ID INT NOT NULL AUTO_INCREMENT, \
         Name VARCHAR(50) NOT NULL UNIQUE, \
