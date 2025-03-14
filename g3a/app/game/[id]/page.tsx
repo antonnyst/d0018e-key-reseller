@@ -1,7 +1,8 @@
 "use client"
-import React from "react";
 import Form from 'next/form'
 import {getCookie} from "cookies-next";
+import React from "react";
+
 
 type GamePageParameters = {
     params: Promise<GamePageProperties>
@@ -16,6 +17,7 @@ type GamePageState = {
     tags?: GameTag[]
     review?: Review[]
     stock?: string
+    userlikegame: boolean | null
 }
 
 type GameTag = {
@@ -38,9 +40,9 @@ interface Review {
     UserID: string,
 }
 
-async function postReview(formdata: FormData, GameID: string | undefined) {
+async function postReview(formdata: FormData, GameID: string | undefined, Opinion: boolean|null) {
     const description = formdata.get("RUserDescription");
-    const positive = formdata.get("RUserPositive");
+    const positive = Opinion
     const gameID = GameID;
     const cookie = getCookie("g3a-session");
 
@@ -83,7 +85,6 @@ async function handleAddToBasket(GameID: string | undefined) {
     document.location.reload()
 }
 
-
 class GamePage extends React.Component<GamePageProperties, GamePageState> {
     componentDidMount(): void {
         fetch("/api/game/" + this.props.id)
@@ -124,6 +125,25 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             .catch(err => console.error("Error fetching reviews:", err));
     }
 
+    constructor(props:GamePageProperties) {
+        super(props);
+        this.state = {
+            userlikegame : null,
+        };
+    }
+
+    handleReview = (formData: FormData) => {
+        const {userlikegame}= this.state;
+        if(userlikegame === null){
+            alert("Please submit yes or no");
+            return;
+        }
+        postReview(formData, this.state.game?.ID, userlikegame);
+    }
+
+    handleLikegame = (value:boolean) => {
+        this.setState({userlikegame:value})
+    }
 
     render(): React.ReactNode {
         if (this.state?.game == undefined) {
@@ -132,11 +152,9 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         const tags: GameTag[] = this.state?.tags ? this.state.tags : [];
         const review: Review[] = this.state?.review ? this.state.review : [];
 
-        const handleReview = (formData: FormData) => postReview(formData, this.state?.game?.ID);
-
         return (
             <div className="bg-gray-100">
-                <div className="p-8 grid grid-cols-5 grid-rows-3 gap-4 h-lvh rounded-lg shadow-md">
+                <div className="p-8 grid grid-cols-5 auto-rows-min gap-4 min-h-screen rounded-lg shadow-md">
                     <div className="bg-white col-span-3 row-span-2 border p-8 rounded-lg flex flex-col">
                         <h1 className="text-5xl text-center mb-10">{this.state.game.Name}</h1>
 
@@ -154,10 +172,37 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                         <img className="h-full w-full" src={"/" + this.state.game.ImageURL}></img>
                     </div>
                     {/* reviews */}
-                    <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg">
+                    <div className="bg-white col-span-5 row-span-1 border p-8 rounded-lg h-auto flex flex-col">
+                        <p className = "flex-1">Leave a review</p>
+                        {this.state.game && this.state.game.ID && (
+                            <Form action={this.handleReview}>
+                                <div className="bg-white col-span-3 row-span-2 border p-8 rounded-lg flex flex-col space-y-4">
+                                    <div className="w-full">
+                                        <h1 className="text-center">What you think:</h1>
+                                        <input name="RUserDescription" className="border-black border w-full"></input>
+                                    </div>
+                                    <div className="w-full items-center justify-center">
+                                        <h1 className="text-center">Would you recommend this game?</h1>
+                                        <button type="button" className=
+                                            {`border-black border px-4 py-2 ${this.state.userlikegame === true ? 'bg-green-500 text-white' : 'bg-white'}`}
+                                                onClick={() => this.handleLikegame(true)}
+                                        >Yes</button>
+                                        <button type="button" className=
+                                            {`border-black border px-4 py-2 ${this.state.userlikegame === false ? 'bg-red-500 text-white' : 'bg-white'}`}
+                                                onClick={() => this.handleLikegame(false)}
+                                        >No</button>
+                                    </div>
+                                    <div className="w-full">
+                                        <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Send
+                                            Review!
+                                        </button>
+                                    </div>
+                                </div>
+                            </Form>
+                        )}
                         <p className="flex-1">Reviews</p>
-                        <div className="w-full flex">
-                            <div className="flex flex-wrap gap-2">
+                        <div className="w-full flex border p-8 rounded-lg">
+                            <div className="flex flex-col space-y-4">
                                 {review.length > 0 ? (
                                     review.map((game: Review, index) => (
                                         <button key={index}
@@ -171,25 +216,6 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                                 )}
                             </div>
                         </div>
-                        {this.state.game && this.state.game.ID && (
-                        <Form action={handleReview}>
-                            <div className="bg-white col-span-3 row-span-2 border p-8 rounded-lg flex">
-                                <div className="w-full">
-                                    <h1 className="text-center">What you think:</h1>
-                                    <input name="RUserDescription" className="border-black border w-full"></input>
-                                </div>
-                                <div className="w-full">
-                                    <h1 className="text-center">You like game? Type 1 or 0:</h1>
-                                    <input name="RUserPositive" className="border-black border w-full"></input>
-                                </div>
-                                <div className="w-full">
-                                    <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">Send
-                                        Review!
-                                    </button>
-                                </div>
-                            </div>
-                        </Form>
-                        )}
                     </div>
 
                     {/* tags on games */}
