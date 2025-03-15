@@ -16,6 +16,7 @@ type GamePageState = {
     game?: Game
     tags?: GameTag[]
     review?: Review[]
+    comment?: Comment[]
     stock?: string
     userlikegame: boolean | null
 }
@@ -40,6 +41,12 @@ interface Review {
     UserID: string,
 }
 
+interface Comment {
+    ID: string,
+    Description: string,
+    ReviewID: string,
+}
+
 async function postReview(formdata: FormData, GameID: string | undefined, Opinion: boolean|null) {
     const description = formdata.get("RUserDescription");
     const positive = Opinion
@@ -53,6 +60,27 @@ async function postReview(formdata: FormData, GameID: string | undefined, Opinio
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({description: description, positive: positive, GameID: gameID, session: cookie}),
+        })
+        if (response) {
+            console.log(response);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+    document.location.reload()
+}
+
+async function postComment(formdata: FormData, commentID: string,) {
+    const comment = formdata.get("comment");
+    const cookie = getCookie("g3a-session");
+
+    try {
+        const response = await fetch("/api/comments", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({description: comment, session: cookie, reviewID: commentID }),
         })
         if (response) {
             console.log(response);
@@ -123,6 +151,16 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                 this.setState({review: json})
             })
             .catch(err => console.error("Error fetching reviews:", err));
+
+        fetch("/api/comments?GameID=" + this.props.id)
+            .then(response => {
+                return response.json()
+            })
+            .then(json => {
+                console.log(json);
+                this.setState({comment: json})
+            })
+            .catch(err => console.error("Error fetching comments:", err));
     }
 
     constructor(props:GamePageProperties) {
