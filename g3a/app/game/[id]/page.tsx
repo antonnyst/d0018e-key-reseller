@@ -152,7 +152,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             })
             .catch(err => console.error("Error fetching reviews:", err));
 
-        fetch("/api/comments?GameID=" + this.props.id)
+        fetch("/api/comments?ReviewID=" + this.props.id)
             .then(response => {
                 return response.json()
             })
@@ -177,6 +177,12 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             return;
         }
         postReview(formData, this.state.game?.ID, userlikegame);
+    }
+
+    handleComment = (formData: FormData, reviewid: string) => {
+        if (reviewid !== undefined) {
+            postComment(formData, reviewid);
+        }
     }
 
     handleLikegame = (value:boolean) => {
@@ -243,11 +249,11 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                             <div className="flex flex-col space-y-4">
                                 {review.length > 0 ? (
                                     review.map((game: Review, index) => (
-                                        <button key={index}
+                                        <div key={index}
                                                 className="p-4 bg-amber-800 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left">
                                             User: {game.UserID} recommends game: {game.Positive ? "TRUE" : "FALSE"} and
                                             says: {game.Description}
-                                        </button>
+                                        </div>
                                     ))
                                 ) : (
                                     <p className="text-gray-500 text-center">No reviews on this game yet.</p>
