@@ -194,17 +194,6 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
     (\"209420jfj202\",  \"1008\"), \
     (\"EEEEEEEEEEEEEEE\",  \"1004\") 
 "
-#mariadb --socket=/var/lib/maria/maria.sock -e "\
-#    INSERT INTO g3a.Order (UserID, Sum ) VALUES \
-#    (\"1000\",  \"5000\")
-#    "
-#mariadb --socket=/var/lib/maria/maria.sock -e "\
-#    INSERT INTO g3a.OrderKeys (OrderID, KeyID ) VALUES \
-#    (\"1000\",  \"30000\"),\
-#    (\"1000\",  \"30001\"), \
-#    (\"1000\",  \"30002\")
-#    "
-
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.Tags (Name) VALUES \
@@ -219,11 +208,6 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
   (\"1\", \"1000\", \"1000\", \"1\", \"I LIKE GAME\"), \
   (\"2\", \"1000\", \"1000\", \"0\", \"I THINK GAME NOT GOOD LIKE MINECRAFT MOVIE\")
 "
-
-#mariadb --socket=/var/lib/maria/maria.sock -e "\
-#  INSERT INTO g3a.Basket (KeyID, UserID) VALUES \
-#  (\"30002\", \"1000\")
-#"
 
 mariadb --socket=/var/lib/maria/maria.sock -e "\
     INSERT INTO g3a.GameTags (GameID, TagID) VALUES \

@@ -61,7 +61,7 @@ app.get('/game', async (req, res) => {
     }
 
     try {
-        const result = await pool.query(query, params);  // ✅ params is always defined
+        const result = await pool.query(query, params);
         res.json(result);
     } catch (err) {
         console.error("Database Query Error:", err);
@@ -295,29 +295,6 @@ app.delete('/gametags', async (req, res) => {
         return res.status(500).send("Error removing tag");
     }
 }); 
-
-/*app.get('/tags', async (req, res) => {
-    let query;
-    if (req.query.search) {
-        // Search with string
-        query = `
-            SELECT * FROM g3a.Tags 
-            WHERE 
-                (g3a.Tags.Name LIKE '%${req.query.search}%')
-        `
-    } else {
-        // Get all tags
-        query = "SELECT * FROM g3a.Tags"
-    }
-
-    let result;
-    try {
-        result = await pool.query(query);
-    } catch (err) {
-        throw err;
-    }
-    res.send(result);
-});*/
 
 app.post('/account', async (req, res) => {
     const { name, password } = req.body;
@@ -685,11 +662,6 @@ app.get("/orderkeys", async (req, res) => {
                 FROM g3a.OrderKeys WHERE g3a.OrderKeys.OrderID = ?
             )
         `
-        /*SELECT * FROM g3a.Keys
-            WHERE g3a.Keys.ID IN (
-                SELECT g3a.OrderKeys.KeyID 
-                FROM g3a.OrderKeys WHERE g3a.OrderKeys.OrderID = ?
-            )*/
         const result = await pool.query(query, [orderID]);
         return res.send(result);
     }catch(err){

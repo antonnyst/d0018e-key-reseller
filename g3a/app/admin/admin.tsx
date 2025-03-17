@@ -20,14 +20,6 @@ type User = {
     SignupTimestamp: string,
 }
 
-/*type Game = {
-    Name: string,
-    ID: string,
-    Description: string,
-    active: boolean,
-    ImageURL: string,
-}*/
-
 type Key = {
     KeyString: string, 
     ID: string,
@@ -153,53 +145,10 @@ export class AdminPage extends React.Component<IProps, IState> {
                 this.setState({keys: keys})
             })
             .catch(err => console.log(err));
-
-            /*
-        fetch("/api/account/keys?session="+this.props.session)
-            .then(response => {console.log(response); return response.json()})
-            .then((json: MinimalKey[]) => {
-                json.forEach((key: MinimalKey) => {
-                    const { KeyString, GameID } = key;
-
-                    fetch("/api/game/"+GameID)
-                        .then(response => response.json())
-                        .then((game: Game) => {
-                            let keys = this.state?.keys;
-                            if (keys == undefined) {
-                                keys = [];
-                            }
-                            keys.push({
-                                KeyString,
-                                GameID,
-                                Name: game.Name,
-                                ImageURL: game.ImageURL
-                            });
-                            this.setState({"keys": keys});
-                        }).catch((err)=>console.log(err));
-                });
-            })
-            .catch(err => console.log(err));
-        */
     }
 
     render(): React.ReactNode {      
         const session = this.props.session;
-    
-        // Static list of games
-        /*const games: Key[] = [
-            {
-                KeyString: "aaa-bbb-ccc",
-                Name: "Gruvkraft - Kiruna Edition",
-                ImageURL: "GRUVKRAFT.jpg",
-                GameID: "1000"
-            },
-            {
-                KeyString: "sussy-key",
-                Name: "EEE",
-                ImageURL: "GRUVKRAFT.jpg",
-                GameID: "1001"
-            }
-        ];*/
         const orders: Order[] = this.state?.orders ? this.state.orders : [];
         const users: User[] = this.state?.users ? this.state.users : [];
         const games: Game[] = this.state?.games ? this.state.games : [];

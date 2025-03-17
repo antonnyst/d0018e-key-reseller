@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 "use client"
 import React from "react";
-//import { json } from "stream/consumers";
 
 
 function gameCard(name: string, description: string, image_url: string, id: string, tags: string[]) {
@@ -44,8 +43,6 @@ class GamesView extends React.Component<IProps, IState> {
     fetch("/api/game")
     .then(response => {console.log(response); return response.json()})
       .then((json: Game[]) => {
-
-        //this.setState({ games });
 
         // Fetch tags for each game
         json.forEach(game => {

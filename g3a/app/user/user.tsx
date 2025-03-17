@@ -119,50 +119,12 @@ export class UserPage extends React.Component<IProps, IState> {
 
     render(): React.ReactNode {      
         const session = this.props.session;
-    
-        // Static list of games
-        /*const games: Key[] = [
-            {
-                KeyString: "aaa-bbb-ccc",
-                Name: "Gruvkraft - Kiruna Edition",
-                ImageURL: "GRUVKRAFT.jpg",
-                GameID: "1000"
-            },
-            {
-                KeyString: "sussy-key",
-                Name: "EEE",
-                ImageURL: "GRUVKRAFT.jpg",
-                GameID: "1001"
-            }
-        ];*/
-        //const games: Key[] = this.state?.keys ? this.state.keys : [];
         const favorites: Favorite[] = this.state?.favorites ? this.state.favorites : [];
         const orders: Order[] = this.state?.orders ? this.state.orders : [];
 
         return (
             <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
                 <h1>{"Logged in with token: " + session}</h1>
-                
-                {/* List of keys
-                <h1 className="text-2xl font-bold mb-6 text-gray-800">My Keys</h1>
-                <div className="space-y-4">
-                    {games.length > 0 ? (
-                    games.map((game: Key, index) => (
-                        <button
-                            key={index}
-                            className="p-4 bg-gray-50 rounded-lg shadow-sm text-gray-700 flex flex-row w-full"
-                            onClick={() => {document.location.href="/game/"+game.GameID}}
-                        >
-                            <img className="aspect-square h-10" src={game.ImageURL}></img>
-                            <h1 className="ml-4 my-auto">{game.Name}</h1>
-                            <p className="flex-1 ml-4 my-auto text-right">{game.KeyString}</p>
-                        </button>
-                    ))
-                    ) : (
-                    <p className="text-gray-500 text-center">No games added yet.</p>
-                    )}
-                </div>
-                */}
 
                 {/* Orders */}
                 <h1 className="text-2xl font-bold mb-6 text-gray-800">My Orders</h1>
