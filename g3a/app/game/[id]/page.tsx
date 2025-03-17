@@ -16,9 +16,9 @@ type GamePageState = {
     game?: Game
     tags?: GameTag[]
     review?: Review[]
-    comment?: Comment[]
     stock?: string
     userlikegame: boolean | null
+    admin: boolean
 }
 
 type GameTag = {
@@ -39,6 +39,7 @@ interface Review {
     Description: string,
     Positive: boolean,
     UserID: string,
+    Comments: Comment[],
 }
 
 interface Comment {
@@ -70,8 +71,9 @@ async function postReview(formdata: FormData, GameID: string | undefined, Opinio
     document.location.reload()
 }
 
-async function postComment(formdata: FormData, commentID: string,) {
+async function postComment(formdata: FormData) {
     const comment = formdata.get("comment");
+    const commentID = formdata.get("commentID");
     const cookie = getCookie("g3a-session");
 
     try {
@@ -142,31 +144,43 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
             })
             .catch(err => console.error("Error fetching gametags:", err));
 
-        fetch("/api/reviews?GameID=" + this.props.id)
+        fetch("/api/reviews?GameID="+this.props.id)
+            .then(response => {return response.json()})
+            .then((json: Review[]) => {
+                json.forEach((review: Review) => {
+                    fetch("/api/comments?ReviewID="+review.ID)
+                        .then(response => response.json())
+                        .then((json: Comment[]) => {
+                            let reviews = this.state?.review;
+                            if (reviews == undefined) {
+                                reviews = [];
+                            }
+                            reviews.push({
+                                ID: review.ID,
+                                Description: review.Description,
+                                Positive: review.Positive,
+                                UserID: review.UserID,
+                                Comments: json,
+                            })
+                            this.setState({"review": reviews});
+                        })
+                });
+            })
+            .catch(err => console.log(err))
+        const session = getCookie("g3a-session");
+        fetch("/api/admin?session="+session)
             .then(response => {
-                return response.json()
+                if (response.ok) {
+                    this.setState({"admin":true})
+                }
             })
-            .then(json => {
-                console.log(json);
-                this.setState({review: json})
-            })
-            .catch(err => console.error("Error fetching reviews:", err));
-
-        fetch("/api/comments?ReviewID=" + this.props.id)
-            .then(response => {
-                return response.json()
-            })
-            .then(json => {
-                console.log(json);
-                this.setState({comment: json})
-            })
-            .catch(err => console.error("Error fetching comments:", err));
     }
 
     constructor(props:GamePageProperties) {
         super(props);
         this.state = {
             userlikegame : null,
+            admin: false,
         };
     }
 
@@ -179,10 +193,9 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         postReview(formData, this.state.game?.ID, userlikegame);
     }
 
-    handleComment = (formData: FormData, reviewid: string) => {
-        if (reviewid !== undefined) {
-            postComment(formData, reviewid);
-        }
+    handleComment = (formData: FormData) => {
+        postComment(formData);
+
     }
 
     handleLikegame = (value:boolean) => {
@@ -195,6 +208,7 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
         }
         const tags: GameTag[] = this.state?.tags ? this.state.tags : [];
         const review: Review[] = this.state?.review ? this.state.review : [];
+        const admin: boolean = !!this.state?.admin;
 
         return (
             <div className="bg-gray-100">
@@ -249,10 +263,38 @@ class GamePage extends React.Component<GamePageProperties, GamePageState> {
                             <div className="flex flex-col space-y-4">
                                 {review.length > 0 ? (
                                     review.map((game: Review, index) => (
-                                        <div key={index}
-                                                className="p-4 bg-amber-800 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left">
-                                            User: {game.UserID} recommends game: {game.Positive ? "TRUE" : "FALSE"} and
-                                            says: {game.Description}
+                                        <div key={index}>
+                                            <div
+                                                    className="p-4 pr-32 bg-amber-800 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left relative">
+                                                User: {game.UserID} recommends game: {game.Positive ? "TRUE" : "FALSE"} and
+                                                says: {game.Description}
+                                                {admin?(
+                                                <button className={"items-end justify-end border-2 rounded-lg bg-white text-black px-2 absolute -translate-y-1/2 right-4 top-1/2 bottom-2 text-center"}
+                                                        onClick={() => {document.getElementById("comment"+index)?.classList.toggle("hidden")}}
+                                                >Respond</button>
+                                                ) : <p/>}
+                                            </div>
+                                            <Form id={"comment" + index} action={this.handleComment} className="hidden mx-4">
+                                                <input type="hidden" name="commentID" value={game.ID} />
+                                                <input name="comment" className={"border-black border w-full"}></input>
+                                                <div className="w-full">
+                                                    <button type="submit" className="border-black border ml-[25%] mr-[25%] w-[50%]">
+                                                        Submit
+                                                    </button>
+                                                </div>
+
+                                            </Form>
+                                            <div className="flex flex-col space-y-4">
+                                                {game.Comments.length > 0 ? (
+                                                    game.Comments.map((comment, index) => (
+                                                        <div key={index}>
+                                                            <div className={"p-4 bg-green-300 rounded-lg shadow-sm text-white flex-1 ml-4 my-auto text-left relative"}>
+                                                                Response from admin: {comment.Description}
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : <p></p>}
+                                            </div>
                                         </div>
                                     ))
                                 ) : (
