@@ -692,8 +692,10 @@ app.post("/sale", async (req, res) => {
     `
 
     const sumquery = `
-        SELECT SUM(g3a.Basket.Price) AS Total 
+        SELECT SUM(g3a.Games.Price) AS Total 
         FROM g3a.Basket 
+        INNER JOIN g3a.Keys ON g3a.Keys.ID = g3a.Basket.KeyID
+        INNER JOIN g3a.Games ON g3a.Games.ID = g3a.Keys.GameID
         WHERE g3a.Basket.UserID = ?
     `
 
@@ -703,9 +705,18 @@ app.post("/sale", async (req, res) => {
     RETURNING g3a.Order.ID 
     `
 
-    const secoundquery= `
+    /*const secoundquery= `
     INSERT INTO g3a.OrderKeys (OrderID, KeyID, Price) 
     SELECT ?, g3a.Basket.KeyID, g3a.Basket.Price FROM g3a.Basket WHERE g3a.Basket.UserID = ?
+    `*/
+
+    const secoundquery= `
+        INSERT INTO g3a.OrderKeys (OrderID, KeyID, Price) 
+        SELECT ?, g3a.Basket.KeyID, g3a.Games.Price 
+        FROM g3a.Basket 
+        INNER JOIN g3a.Keys ON g3a.Keys.ID = g3a.Basket.KeyID
+        INNER JOIN g3a.Games ON g3a.Games.ID = g3a.Keys.GameID
+        WHERE g3a.Basket.UserID = ?
     `
 
     const thirdquery= `
@@ -851,10 +862,10 @@ app.post("/basket", async (req, res) => {
 
     try{
         query = `
-            INSERT INTO g3a.Basket (UserID, KeyID, Price)
-            VALUES (?, ?, (SELECT g3a.Games.Price FROM g3a.Games WHERE g3a.Games.ID = ?))
+            INSERT INTO g3a.Basket (UserID, KeyID)
+            VALUES (?, ?)
         `
-        const result = await pool.query(query, [userID, KeyIDs[0].ID, GameID]);
+        const result = await pool.query(query, [userID, KeyIDs[0].ID]);
         return res.send(result);
     }catch(err){
         console.log(err);

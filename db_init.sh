@@ -135,7 +135,6 @@ mariadb --socket=/var/lib/maria/maria.sock -e "\
         Timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
         KeyID INT NOT NULL, \
         UserID INT NOT NULL, \
-        Price DOUBLE NOT NULL, \
         PRIMARY KEY (KeyID, UserID), \
         FOREIGN KEY (KeyID) REFERENCES g3a.Keys(ID) ON DELETE CASCADE, \
         FOREIGN KEY (UserID) REFERENCES g3a.Users(ID) ON DELETE CASCADE \
